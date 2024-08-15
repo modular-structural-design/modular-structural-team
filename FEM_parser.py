@@ -3,8 +3,11 @@ import numpy as np
 import os
 import sys
 import comtypes.client
+import math as m
+import json
+import utils as ut
 
-with open('config.json.json', 'r') as f:
+with open('config.json', 'r') as f:
     analysis_data = json.load(f)
 
 sap_dirpath = analysis_data["sap_dirpath"]  ####该地址、
@@ -289,10 +292,133 @@ def FEM_loading(SapModel, model_info):
     return SapModel
 
 #
-# def
-#
+def out_put_reaction(SapModel,frames):
+    name_re = []
+    frame_reactions = []
+    frame_reactions_all = []
+    for edge_indx in range(len(frames)):
+        result = []
+        P_na = []
+        mm1 = np.zeros((7, 3))
+        mm2 = []
+        Obj, ObjSta, P, V2, V3, T, M2, M3 = get_frame_reactions("frame"+str(edge_indx), SapModel)
+        if len(P) != 0:
+            # result.append(Obj)
+            result.append(ObjSta)
+            result.append(P)
+            result.append(V2)
+            result.append(V3)
+            result.append(T)
+            result.append(M2)
+            result.append(M3)
+            num_fra = len(Obj)
+            mid_num = int(0.5 * (num_fra))
+            name_re.append(Obj[0])
 
-def parsing_to_sap2000(total_info, FEA_semantic_lists, modular_FEM):
+            for i in range(len(result)):
+                mm1[i][0] = result[i][0]
+                mm1[i][1] = result[i][mid_num]
+                mm1[i][2] = result[i][num_fra - 1]
+            frame_reactions.append(mm1)
+            frame_reactions_all.append(result)
+    mm = ["ObjSta", "P", "V2", "V3", "T", "M2", "M3"]
+    frame_weight = []
+
+
+    return frame_reactions
+
+def get_frame_reactions(frames,SapModel):
+    result = []
+    Object11 = 0
+    Obj = []
+    ObjSta = []
+    Elm = []
+    ElmSta = []
+    LoadCase = []
+    StepType = []
+    StepNum = []
+    NumberResults = 0
+    P = []
+    V2 = []
+    V3 = []
+    T = []
+    M2 = []
+    M3 = []
+    [NumberResults, Obj, ObjSta, Elm, ElmSta, LoadCase, StepType, StepNum, P, V2, V3, T, M2, M3,
+     ret] = SapModel.Results.FrameForce(frames, Object11, NumberResults, Obj, ObjSta, Elm, ElmSta, LoadCase, StepType, StepNum, P, V2, V3, T, M2,M3)
+    return Obj, ObjSta,P, V2, V3, T, M2,M3
+
+def out_put_displacement(Nodes, SapModel):
+    displacements = []
+    displacements_hor = []
+    name_all_nodes = []
+    for i in range(len(Nodes)):
+        result = []
+        Obj,U1, U2, U3, R1, R2, R3 = get_point_displacement("nodes"+str(i), SapModel)
+        # if len(U1) != 0:
+        name_all_nodes.append(Obj[0])
+        result.append(U1[0])
+        result.append(U2[0])
+        result.append(U3[0])
+        # result.append(R1[0])
+        # result.append(R2[0])
+        # result.append(R3[0])
+        displacements.append(result)
+        displacements_hor.append(m.sqrt(U1[0]**2+U2[0]**2))
+    displacements = np.array(displacements)
+
+    return displacements
+
+def get_point_displacement(nodes,SapModel):
+    displacements = []
+    ObjectElm = 0
+    NumberResults = 0
+    m001 = []
+    result = []
+    Obj = []
+    Elm = []
+    ACase = []
+    StepType = []
+    StepNum = []
+    U1 = []
+    U2 = []
+    U3 = []
+    R1 = []
+    R2 = []
+    R3 = []
+    ObjectElm = 0
+    [NumberResults, Obj, Elm, ACase, StepType, StepNum, U1, U2, U3, R1, R2, R3,ret] = SapModel.Results.JointDispl(nodes, ObjectElm, NumberResults, Obj,Elm, ACase, StepType, StepNum, U1, U2, U3, R1, R2, R3)
+    return Obj,U1, U2, U3, R1, R2, R3
+
+def output_data(SapModel,FEA_info2):
+    '''
+
+    :param SapModel: sap2000运行后的模型
+    :param FEA_info2: data_case1.json中读取的信息
+    :return: dict{node_dis_dict节点位移信息,frame_reaction_dict构件作用力信息}
+            node_dis_dict：{节点名：列表[x,y,z]}
+            frame_reaction_dict:{构件名：列表[[构件的距离]，[轴力]，[2-2剪力]，[3-3剪力]，[扭矩]，[2-2弯矩]，[3-3弯矩]]}
+    '''
+    comb_name = list(FEA_info2['load_combinations'].keys())[0]
+    ret = SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
+    ret = SapModel.Results.Setup.SetComboSelectedForOutput(comb_name)
+
+    frame_reaction = out_put_reaction(SapModel,FEA_info2['frames_index'])
+    node_info =out_put_displacement(FEA_info2['nodes_geo'], SapModel)
+
+    node_dis_dict ={}
+    frame_reaction_dict = {}
+    for i in range(len(node_info)):
+        node_dis_dict["nodes"+str(i)] = node_info[i].tolist()
+        frame_reaction_dict["frame"+str(i)] = frame_reaction[i].tolist()
+
+    all_infor=[node_dis_dict,frame_reaction_dict]
+    json_str = json.dumps(all_infor)
+    with open('calculate_data.json', 'w') as json_file:
+        json_file.write(json_str)
+
+#
+def parsing_to_sap2000(total_info: object, FEA_semantic_lists: object, modular_FEM: object) -> object:
     with open(FEA_semantic_lists, "r") as f:
         semantic_list = json.load(f)
 
@@ -307,9 +433,9 @@ def parsing_to_sap2000(total_info, FEA_semantic_lists, modular_FEM):
     ret = SapModel.Analyze.RunAnalysis()
 
     ######### close sap2000 ############
-    ret = mySapObject.ApplicationExit(False)
-    SapModel = None
-    mySapObject = None
+    # ret = mySapObject.ApplicationExit(False)
+    # SapModel = None
+    # mySapObject = None
 
     pass
-
+    return SapModel
