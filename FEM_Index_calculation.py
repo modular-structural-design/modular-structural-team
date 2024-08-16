@@ -3,13 +3,11 @@ import math
 
 def extract_nodes_and_frames():
     """
-    从给定的JSON文件中提取所有以'nodes'和'frame'开头的键值对。
-    参数:
-    file_path (str): JSON文件的路径。
+    从calculate_data.json中提取所有以'nodes'和'frame'开头的信息。
     返回:
     dict: 包含所有'nodes'和'frame'相关数据的字典。
     """
-    # 创建一个字典来存储所有的nodes和frame数据
+    # 存储nodes和frame数据
     all_data = {}
 
     # 打开并加载 JSON 文件
@@ -27,35 +25,31 @@ def extract_nodes_and_frames():
         for key, value in obj.items():
             if key.startswith('frame'):
                 all_data[key] = value
-
-
     return all_data
 
 
 def extract_section_info():
-
-    # 从文件中加载 JSON 数据
+    # 从FEA_semantic_lists.json中提取截面类型信息
     with open('FEMData/FEA_semantic_lists.json', 'r') as file:
         data = json.load(file)
-
-    # 提取 Channel 数据
+    # 提取截面类型信息
     channel_data = data.get('section_types', {}).get('Channel', {})
 
     return channel_data
 
 
 def read_fem_data():
-    # 读取文件
+    # 读取mic_FEM_data.json
     with open('FEMData/mic_FEM_data.json', 'r') as file:
         data = json.load(file)
 
-    # 提取frames_index
+    # 提取frames两端节点
     frames_index = data.get('frames_index', {})
 
-    # 提取frames_sections
+    # 提取frames截面类型
     frames_sections = data.get('frames_sections', {})
 
-    # 提取nodes_geo
+    # 提取节点坐标
     nodes_geo = {}
     nodes_geo = data.get('nodes_geo', {})
 
@@ -91,6 +85,37 @@ def extract_section_properties(frames_sections, section_info):
         }
 
     return section_properties
+
+def calculate_frame_lengths(frames_index, nodes_geo):
+    """
+    计算frame两端节点之间的欧几里得距离。
+    参数:
+    - frames_index: 包含帧及其起始和结束节点索引的字典。
+    - nodes_geo: 包含节点索引及其三维坐标的字典。
+    返回:
+    - frame_lengths: 包含每个帧的长度的字典。
+    """
+    frame_lengths = {}
+
+    for frame, endpoints in frames_index.items():
+        start_node_index, end_node_index = endpoints
+        start_node_key = f"nodes{start_node_index}"
+        end_node_key = f"nodes{end_node_index}"
+
+        # 获取节点坐标
+        start_node = nodes_geo[start_node_key]
+        end_node = nodes_geo[end_node_key]
+
+        # 计算欧几里得距离
+        distance = math.sqrt(
+            (end_node[0] - start_node[0]) ** 2 +
+            (end_node[1] - start_node[1]) ** 2 +
+            (end_node[2] - start_node[2]) ** 2
+        )
+
+        frame_lengths[frame] = distance
+
+    return frame_lengths
 
 def calculate_g(section_properties, frame_reactions,frame_length):
     # 柱强度验算
@@ -134,47 +159,8 @@ def calculate_g(section_properties, frame_reactions,frame_length):
 
 
 
-
-
-
-
-def calculate_frame_lengths(frames_index, nodes_geo):
-    """
-    计算frame两端节点之间的欧几里得距离。
-    参数:
-    - frames_index: 包含帧及其起始和结束节点索引的字典。
-    - nodes_geo: 包含节点索引及其三维坐标的字典。
-    返回:
-    - frame_lengths: 包含每个帧的长度的字典。
-    """
-    frame_lengths = {}
-
-    for frame, endpoints in frames_index.items():
-        start_node_index, end_node_index = endpoints
-        start_node_key = f"nodes{start_node_index}"
-        end_node_key = f"nodes{end_node_index}"
-
-        # 获取节点坐标
-        start_node = nodes_geo[start_node_key]
-        end_node = nodes_geo[end_node_key]
-
-        # 计算欧几里得距离
-        distance = math.sqrt(
-            (end_node[0] - start_node[0]) ** 2 +
-            (end_node[1] - start_node[1]) ** 2 +
-            (end_node[2] - start_node[2]) ** 2
-        )
-
-        frame_lengths[frame] = distance
-
-    return frame_lengths
-
-
-
-
-
 def calculate_node_differences():
-    # 准备一个空字典来存储结果
+    # 计算层间位移角
     story_drift = {}
 
     # 从node248开始处理数据
@@ -202,7 +188,7 @@ def calculate_node_differences():
     return story_drift
 
 def calculate_abs_node_differences():
-    # 准备一个空字典来存储结果
+    # 计算绝对层间位移
     abs_story_drift = {}
 
     # 从node248开始处理数据
@@ -226,12 +212,11 @@ def calculate_abs_node_differences():
 
 def find_max_coordinates(results):
     """
-    寻找给定坐标数据中最大 G11、G12 和 G13 值及其对应的帧。
-
+    寻找结果中最大 G11、G12 和 G13 值及其对应的frame。
     参数:
     - results (dict): G11,G12,G13及对应的frame。
     返回:
-    - dict: 包含最大 G11、G12 和 G13 值及其对应帧的字典。
+    - dict: 包含最大 G11、G12 和 G13 值及其对应frame。
     """
     # 将列表转换为字典
     results = {frame_name: frame_data for frame_name, frame_data in results}
@@ -274,7 +259,7 @@ def find_max_coordinates(results):
         elif max_z == max(max_G13_values):
             frames_with_max_G13.append(frame_name)
 
-    # 输出最大值及其对应的帧
+    # 输出最大值及其对应的frame
     max_G11 = max(max_G11_values)
     max_G12 = max(max_G12_values)
     max_G13 = max(max_G13_values)
@@ -287,7 +272,7 @@ def find_max_story_drift(story_drift):
     参数:
     - story_drift: 层间位移。
     返回:
-    -  max_x_value, max_y_value, node_with_max_x, node_with_max_y: x和y向的最大层间位移。
+    -  max_x_value, max_y_value, node_with_max_x, node_with_max_y: x和y向的最大层间位移及节点。
     """
     # 初始化最大值及其对应的节点
     max_x_value = float('-inf')
