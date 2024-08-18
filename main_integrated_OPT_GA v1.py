@@ -147,7 +147,7 @@ FEA.parsing_to_sap2000(FEA_info2, 'FEMData/FEA_semantic_lists.json', modular_FEM
 
 
 # region Evaluation
-
-# 请将运行的代码补充在这里
+import FEM_Index_calculation as FC
+FC.output_index(modular_FEM)
 
 # endregion

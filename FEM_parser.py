@@ -10,7 +10,7 @@ import utils as ut
 with open('config.json', 'r') as f:
     analysis_data = json.load(f)
 
-sap_dirpath = analysis_data["sap_dirpath"]  ####该地址、
+sap_dirpath = analysis_data["sap_dirpath_xy"]  ####该地址、
 analysis_model_path = os.path.join(os.getcwd(), "FEM_sap2000")
 
 
@@ -440,10 +440,13 @@ def parsing_to_sap2000(total_info: object, FEA_semantic_lists: object, modular_F
     ret = SapModel.File.Save('FEM_sap2000/MiC1.sdb')
     ret = SapModel.Analyze.RunAnalysis()
 
-    ######### close sap2000 ############
-    # ret = mySapObject.ApplicationExit(False)
-    # SapModel = None
-    # mySapObject = None
+    ## output analysis data###
+    output_data(SapModel, total_info)
 
-    pass
-    return SapModel,mySapObject
+    ######## close sap2000 ############
+    ret = mySapObject.ApplicationExit(False)
+    SapModel = None
+    mySapObject = None
+
+    # pass
+    return None
