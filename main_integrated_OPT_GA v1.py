@@ -140,6 +140,14 @@ modular_FEM = {
 }
 FEA_info2 = ut.implement_FEA_info_enrichment('FEMData/')
 import FEM_parser as FEA
-FEA.parsing_to_sap2000(FEA_info2,  'FEMData/FEA_semantic_lists.json', modular_FEM)
+
+FEA.parsing_to_sap2000(FEA_info2, 'FEMData/FEA_semantic_lists.json', modular_FEM)
+
+# endregion
+
+
+# region Evaluation
+
+# 请将运行的代码补充在这里
 
 # endregion
