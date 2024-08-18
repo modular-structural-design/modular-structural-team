@@ -299,6 +299,23 @@ def find_max_story_drift(story_drift):
 
     return max_x_value, max_y_value, node_with_max_x, node_with_max_y
 
+def calculate_total_weight(frame_lengths, section_properties):
+    """
+    计算结构总重。
+    """
+    # 密度
+    constant = 0.00000000785
+
+    # 计算总重量
+    total_weight = 0.0
+    for frame in frame_lengths:
+        length = frame_lengths[frame]
+        area = section_properties[frame]['Area']
+        weight = length * area * constant
+        total_weight += weight
+
+    return total_weight
+
 # 提取数据
 all_data = extract_nodes_and_frames()
 # 导出构件信息，节点位置
