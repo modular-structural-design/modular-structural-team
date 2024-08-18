@@ -446,4 +446,4 @@ def parsing_to_sap2000(total_info: object, FEA_semantic_lists: object, modular_F
     # mySapObject = None
 
     pass
-    return SapModel
+    return SapModel,mySapObject
