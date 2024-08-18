@@ -5,7 +5,8 @@ import json
 from importlib import reload
 import utils as ut
 import GA as GA
-
+import FEM_Index_calculation as FC
+import FEM_parser as FP
 # region Reading data
 with open('BuildingData/data_case1.json', 'r') as f:
     building_data = json.load(f)
@@ -136,10 +137,15 @@ reload(ut)
 # FEA_info = ut.implement_FEA_info('FEMData/')
 modular_FEM = {
     1: {"sections": [6, 8, 12]},
-    2: {"sections": [2, 7, 17]}
+    2: {"sections": [7, 7, 17]}
 }
 FEA_info2 = ut.implement_FEA_info_enrichment('FEMData/')
 import FEM_parser as FEA
-FEA.parsing_to_sap2000(FEA_info2,  'FEMData/FEA_semantic_lists.json', modular_FEM)
+# FEA.parsing_to_sap2000(FEA_info2,  'FEMData/FEA_semantic_lists.json', modular_FEM)
 
 # endregion
+#输出计算结果
+SapModel, mySapObject = FEA.parsing_to_sap2000(FEA_info2, 'FEMData/FEA_semantic_lists.json', modular_FEM)
+FP.output_data(SapModel, FEA_info2)
+#输出指标
+FC.output_index(modular_FEM)
