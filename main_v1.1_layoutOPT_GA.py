@@ -136,8 +136,8 @@ ut.plot_3D_members(nodes, edges, planes)
 reload(ut)
 # FEA_info = ut.implement_FEA_info('FEMData/')
 modular_FEM = {
-    1: {"sections": [6, 8, 12]},
-    2: {"sections": [7, 7, 17]}
+    1: {"sections": [12, 12, 12]},
+    2: {"sections": [12, 12, 17]}
 }
 FEA_info2 = ut.implement_FEA_info_enrichment('FEMData/')
 import FEM_parser as FEA
