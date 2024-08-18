@@ -197,7 +197,7 @@ def calculate_abs_node_differences():
     start_node = 248
 
     # 遍历从node248开始的所有节点
-    for i in range(start_node, len(all_data)):
+    for i in range(start_node, len(nodes_geo)):
         node_key = f"nodes{i}"
         if node_key in all_data:
             current_node = all_data[node_key]
@@ -324,6 +324,7 @@ frames_index, frames_sections, nodes_geo = read_fem_data()
 section_info = extract_section_info()
 frame_lengths = calculate_frame_lengths(frames_index, nodes_geo)
 section_properties = extract_section_properties(frames_sections, section_info)
+total_weight = calculate_total_weight(frame_lengths, section_properties)
 # 存储计算结果
 results = []
 
@@ -384,6 +385,9 @@ result = {
     "maximum_Y_abs_story_drift": {
         "value": max_y_abs_story_drift,
         "node": node_with_max_y_abs_story_drift
+    },
+    "total_weight": {
+        "value": total_weight,
     }
 }
 
