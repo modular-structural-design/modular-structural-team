@@ -1,20 +1,25 @@
 import copy
-
 import numpy as np
 import json
 from importlib import reload
 import utils as ut
 import GA as GA
+import os
 
 # region Reading data
-with open('BuildingData/data_case1.json', 'r') as f:
+with open('config.json', 'r') as f:
+    file_data = json.load(f)
+
+with open(os.path.join(file_data["file_paths"]["BuildingData"], file_data["file_names"]["building_data"]), 'r') as f:
     building_data = json.load(f)
+
 out_space_num = len(building_data['outer_space_config'])
 out_space_info = building_data["outer_space_per_building"]
 out_space_cfg = building_data["outer_space_config"]
 inner_space_info = building_data["outer_space_has_inner_space"]
 inner_space_cfg = building_data["inner_space_config"]
 out_space_relationship = building_data["outer_space_relationship"]
+
 # endregion
 
 # region Analysis the layout
@@ -27,11 +32,11 @@ out_space_relationship = building_data["outer_space_relationship"]
 #     5: 3800,
 #     6: 4000
 # }
-modular_type = {
-    0: 10000000,
-    1: 3000,
-    2: 4000
-}
+
+with open(os.path.join(file_data["file_paths"]["BuildingData"], file_data["file_names"]["mic_types"]), 'r') as f:
+    tp = json.load(f)
+modular_type = tp['case1']
+modular_type = {int(key): value for key, value in modular_type.items()}
 # endregion
 
 # region layout optimization
@@ -70,7 +75,7 @@ pop_ori = GA.evaluate_population(building_data, modular_type, entire_region_dict
 pop_ori = GA.fitness_rank_pop_calculation(pop_ori)
 best_ind, index = GA.select_best(pop_ori)
 
-iters = 100
+iters = 10
 best_ind_hist = []
 pop_new = copy.deepcopy(pop_ori)
 best_ind_new = copy.deepcopy(best_ind)
@@ -97,10 +102,11 @@ for i in range(iters):
 
 # endregion
 
-# region layout plot
-modular_plan_x = GA.decode(entire_region_dict, region_index, DNA_digits, best_ind_new['gen'])
-
+# region save and layout plot
 reload(ut)
+modular_plan_x = GA.decode(entire_region_dict, region_index, DNA_digits, best_ind_new['gen'])
+tp = ut.output_layouts(modular_plan_x, 1)
+
 data1 = ut.evaluate_modulars(modular_plan_x)
 data2 = ut.evaluate_outspace(out_space_info, out_space_cfg, modular_type, modular_plan_x)
 data3 = ut.evaluate_innerspace(out_space_info, inner_space_info, inner_space_cfg, modular_type, modular_plan_x)
@@ -109,45 +115,3 @@ case1 = ut.draw_data_transform(modular_plan_x, modular_type, out_space_info, out
 ut.draw_case(case1)
 # endregion
 
-# region FEM modelling and analysis
-file_name = 'FEMData/basic_structure_data.json'
-story_height = {"0": 3000, "1": 3000, "2": 3000}
-
-reload(GA)
-modular_plan_x = GA.decode(entire_region_dict, region_index, DNA_digits, best_ind_new['gen'])
-tp = {}
-for key, value in modular_plan_x.items():
-    value_tp = [int(i) for i in value]
-    tp[str(key)] = list(value_tp)
-with open('plan_tp1.json', 'w') as f:
-    json.dump(tp, f, indent=4)
-
-reload(ut)
-project_info = ut.output_structured_data(building_data, modular_plan_x, modular_type, story_height, file_name)
-MiC_info = ut.implement_modular_structure_data('FEMData/')
-nodes, edges, planes = ut.transform_mic_data(MiC_info)
-
-MiC_info2 = ut.modify_mic_geo('FEMData/', contraction=200)
-nodes, edges, planes = ut.transform_mic_data2(MiC_info2)
-ut.plot_3D_members(nodes, edges, planes)
-
-# FEM information enrichment and generation
-reload(ut)
-# FEA_info = ut.implement_FEA_info('FEMData/')
-modular_FEM = {
-    1: {"sections": [6, 8, 12]},
-    2: {"sections": [2, 7, 17]}
-}
-FEA_info2 = ut.implement_FEA_info_enrichment('FEMData/')
-import FEM_parser as FEA
-
-FEA.parsing_to_sap2000(FEA_info2, 'FEMData/FEA_semantic_lists.json', modular_FEM)
-
-# endregion
-
-
-# region Evaluation
-import FEM_Index_calculation as FC
-FC.output_index(modular_FEM)
-
-# endregion

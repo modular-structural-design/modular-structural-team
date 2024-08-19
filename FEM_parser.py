@@ -10,21 +10,23 @@ import utils as ut
 with open('config.json', 'r') as f:
     analysis_data = json.load(f)
 
-sap_dirpath = analysis_data["sap_dirpath_xy"]  ####该地址、
-analysis_model_path = os.path.join(os.getcwd(), "FEM_sap2000")
+sap_dirpath = analysis_data["file_paths"]["sap_dirpath_xy"]  ####该地址、
+# analysis_model_path = os.path.join(os.getcwd(), "FEM_sap2000")
 
 
-def sap2000_initialization():
+def sap2000_initialization(model_file_path):
     # SAP initialization
     ## 1. SAP initialization
+    sap_model_file = os.path.join(model_file_path, 'FEM_sap2000')
     AttachToInstance = False
     SpecifyPath = True
-    if not os.path.exists(analysis_model_path):
+    if not os.path.exists(sap_model_file):
         try:
-            os.makedirs(analysis_model_path)
+            os.makedirs(sap_model_file)
         except OSError:
             pass
-    ModelPath = os.path.join(analysis_model_path, "API_1-001.sdb")
+    # ModelPath = os.path.join(model_file_path, "API_1-001.sdb")
+    # ModelPath = os.path.join(model_file_path, "API_1-001.sdb")
     helper = comtypes.client.CreateObject("SAP2000v1.Helper")
     helper = helper.QueryInterface(comtypes.gen.SAP2000v1.cHelper)
     if AttachToInstance:
@@ -397,7 +399,7 @@ def get_point_displacement(nodes, SapModel):
     return Obj, U1, U2, U3, R1, R2, R3
 
 
-def output_data(SapModel, FEA_info2):
+def output_data(SapModel, FEA_info2, data_file_path):
     '''
 
     :param SapModel: sap2000运行后的模型
@@ -421,27 +423,32 @@ def output_data(SapModel, FEA_info2):
 
     all_infor = [node_dis_dict, frame_reaction_dict]
     json_str = json.dumps(all_infor)
-    with open('calculate_data.json', 'w') as json_file:
+    with open(os.path.join(data_file_path, 'calculate_data.json'), 'w') as json_file:
         json_file.write(json_str)
+    pass
 
 
 #
-def parsing_to_sap2000(total_info: object, FEA_semantic_lists: object, modular_FEM: object) -> object:
-    with open(FEA_semantic_lists, "r") as f:
+def parsing_to_sap2000(total_info: object, FEA_semantic_file: object, modular_FEM: object, model_file_path) -> object:
+    with open(FEA_semantic_file, "r") as f:
         semantic_list = json.load(f)
 
-    SapModel, mySapObject = sap2000_initialization()
+    SapModel, mySapObject = sap2000_initialization(model_file_path)
     SapModel = FEM_properties_dataset(SapModel, semantic_list)
     SapModel = FEM_member_modelling(SapModel, total_info, modular_FEM)
     SapModel = FEM_boundary(SapModel, total_info)
     SapModel = FEM_loading(SapModel, total_info)
 
     ####### save and analysis ##########
-    ret = SapModel.File.Save('FEM_sap2000/MiC1.sdb')
+
+    sap_model_file = os.path.join(model_file_path, 'FEM_sap2000\\MiC1.sdb')
+    if not os.path.exists(os.path.dirname(sap_model_file)):
+        os.makedirs(os.path.dirname(sap_model_file))
+    ret = SapModel.File.Save(sap_model_file)
     ret = SapModel.Analyze.RunAnalysis()
 
     ## output analysis data###
-    output_data(SapModel, total_info)
+    output_data(SapModel, total_info, model_file_path)
 
     ######## close sap2000 ############
     ret = mySapObject.ApplicationExit(False)

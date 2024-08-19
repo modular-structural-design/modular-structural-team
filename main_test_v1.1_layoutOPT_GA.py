@@ -111,7 +111,7 @@ ut.draw_case(case1)
 # endregion
 
 # region FEM modelling and analysis
-file_name = 'FEMData/basic_structure_data.json'
+file_name = 'FEMData_prescribed/basic_structure_data.json'
 story_height = {"0": 3000, "1": 3000, "2": 3000}
 
 reload(GA)
@@ -125,27 +125,27 @@ with open('plan_tp1.json', 'w') as f:
 
 reload(ut)
 project_info = ut.output_structured_data(building_data, modular_plan_x, modular_type, story_height, file_name)
-MiC_info = ut.implement_modular_structure_data('FEMData/')
+MiC_info = ut.implement_modular_structure_data('FEMData_prescribed/')
 nodes, edges, planes = ut.transform_mic_data(MiC_info)
 
-MiC_info2 = ut.modify_mic_geo('FEMData/', contraction=200)
+MiC_info2 = ut.modify_mic_geo('FEMData_prescribed/', contraction=200)
 nodes, edges, planes = ut.transform_mic_data2(MiC_info2)
 ut.plot_3D_members(nodes, edges, planes)
 
 # FEM information enrichment and generation
 reload(ut)
-# FEA_info = ut.implement_FEA_info('FEMData/')
+# FEA_info = ut.implement_FEA_info('FEMData_prescribed/')
 modular_FEM = {
     1: {"sections": [12, 12, 12]},
     2: {"sections": [12, 12, 17]}
 }
-FEA_info2 = ut.implement_FEA_info_enrichment('FEMData/')
+FEA_info2 = ut.implement_FEA_info_enrichment('FEMData_prescribed/')
 import FEM_parser as FEA
-# FEA.parsing_to_sap2000(FEA_info2,  'FEMData/FEA_semantic_lists.json', modular_FEM)
+# FEA.parsing_to_sap2000(FEA_info2,  'FEMData_prescribed/FEA_semantic_lists.json', modular_FEM)
 
 # endregion
 #输出计算结果
-SapModel, mySapObject = FEA.parsing_to_sap2000(FEA_info2, 'FEMData/FEA_semantic_lists.json', modular_FEM)
+SapModel, mySapObject = FEA.parsing_to_sap2000(FEA_info2, 'FEMData_prescribed/FEA_semantic_lists.json', modular_FEM)
 FP.output_data(SapModel, FEA_info2)
 #输出指标
 FC.output_index(modular_FEM)

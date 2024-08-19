@@ -6,11 +6,21 @@ import pyvista as pv
 import json
 import os
 import copy
+import pandas as pd
 
 np.bool = np.bool_
 
+with open('config.json', 'r') as f:
+    file_data = json.load(f)
 
-# Preprocess
+Sapmodel_path = file_data["file_paths"]['FEM_analysis_file']
+FEMdata_path = file_data["file_paths"]['FEMData']
+Layout_Results_path = file_data["file_paths"]['Layout_Resulst']
+Drawing_path = file_data["file_paths"]['DrawingResults']
+BuildingData_path = file_data["file_paths"]['BuildingData']
+
+
+# region Preprocess
 def unique_list(list_):
     result_list = []
     for term in list_:
@@ -20,7 +30,10 @@ def unique_list(list_):
     return np.unique(result_list).tolist()
 
 
-# Problem evaluation
+# endregion
+
+
+# region Layout evaluation and post process
 def softmin(x):
     tp = 0
     alpa = 20
@@ -178,7 +191,32 @@ def evaluate_innerspace(out_space_info_, inner_space_info_, inner_space_cfg_, mo
     return f3_return
 
 
-# Automated FEM modelling
+def output_layouts(modular_plan_x, case_number):
+    if not os.path.exists(Layout_Results_path):
+        os.makedirs(Layout_Results_path)
+
+    tp_plan = {}
+    for key, value in modular_plan_x.items():
+        # tp_plan.append(np.array(value, dtype=int).tolist())
+        tp_plan[key] = np.array(value, dtype=int).tolist()
+
+    tp = 'layout' + str(case_number) + '.json'
+    file2 = os.path.join(Layout_Results_path, tp)
+    with open(file2, 'w') as f:
+        json.dump(tp_plan, f, indent=4)
+
+    # df = pd.DataFrame.from_dict(modular_plan_x, orient='index')
+    # tp = 'layout'+ str(case_number) + '.csv'
+    # file2 = os.path.join(Layout_Results_path, tp)
+    # df_read = pd.read_csv(file2, index_col=0)
+    # data_read = df_read.to_dict(orient='list')
+
+    return None
+
+
+# endregion
+
+# region Automated FEM modelling
 def output_structured_data(building_data, modular_plan_x, modular_type, story_height, file_path,
                            connection_distance=0.1):
     building_data1 = copy.deepcopy(building_data)
@@ -843,9 +881,9 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
     return project_info
 
 
-def implement_modular_structure_data(file_path, connection_distance=1):
-    file1 = os.path.join(file_path, 'basic_structure_data.json')
-    with open(file1, 'r') as f:
+def implement_modular_structure_data(file_path_in, file_path_out, connection_distance=1):
+    # file1 = os.path.join(file_path, 'basic_structure_data.json')
+    with open(file_path_in, 'r') as f:
         project_info = json.load(f)
     modulars = project_info["modulars"]
     nodes = project_info["nodes"]
@@ -929,8 +967,8 @@ def implement_modular_structure_data(file_path, connection_distance=1):
     mic_info["modulars"] = new_modulars
     mic_info["inter_connections"] = new_inter_connections
 
-    file2 = os.path.join(file_path, 'mic_structure_data.json')
-    with open(file2, 'w') as f:
+    # file2 = os.path.join(file_path, 'mic_structure_data.json')
+    with open(file_path_out, 'w') as f:
         json.dump(mic_info, f, indent=4)
 
     return mic_info
@@ -947,9 +985,9 @@ def find_adjust_direction(point, center_point):
     return direction
 
 
-def modify_mic_geo(file_path, contraction=100):
-    file1 = os.path.join(file_path, 'mic_structure_data.json')
-    with open(file1, 'r') as f:
+def modify_mic_geo(file_path_in, file_path_out, contraction=100):
+    # file1 = os.path.join(file_path, 'mic_structure_data.json')
+    with open(file_path_in, 'r') as f:
         mic_info = json.load(f)
     modulars = mic_info['modulars']
 
@@ -993,8 +1031,8 @@ def modify_mic_geo(file_path, contraction=100):
     mic_info_new["modulars"] = new_modulars
     mic_info_new["inter_connections"] = new_inter_connections
 
-    file2 = os.path.join(file_path, 'mic_structure_data2.json')
-    with open(file2, 'w') as f:
+    # file2 = os.path.join(file_path, 'mic_structure_data2.json')
+    with open(file_path_out, 'w') as f:
         json.dump(mic_info_new, f, indent=4)
 
     return mic_info_new
@@ -1062,12 +1100,12 @@ def implement_FEA_info(file_path):
     return total_info
 
 
-def implement_FEA_info_enrichment(file_path, bottom=200.):
-    file1 = os.path.join(file_path, 'mic_structure_data2.json')
-    file2 = os.path.join(file_path, 'FEA_loading.json')
-    with open(file1, 'r') as f:
+def implement_FEA_info_enrichment(file_path1, file_path2, file_path_out, bottom=200.):
+    # file1 = os.path.join(file_path, 'mic_structure_data2.json')
+    # file2 = os.path.join(file_path, 'FEA_loading.json')
+    with open(file_path1, 'r') as f:
         mic_info = json.load(f)
-    with open(file2, 'r') as f:
+    with open(file_path2, 'r') as f:
         loading_info = json.load(f)
     # with open(os.path.join(file_path, 'FEA_semantic_lists.json'), 'r') as f:
     #     semantics = json.load(f)
@@ -1212,13 +1250,18 @@ def implement_FEA_info_enrichment(file_path, bottom=200.):
     total_info["seismic_info"] = seismic_info
     total_info["load_combinations"] = load_combinations
 
-    with open(os.path.join(file_path, 'mic_FEM_data.json'), 'w') as f:
+    # with open(os.path.join(file_path, 'mic_FEM_data.json'), 'w') as f:
+    #     json.dump(total_info, f, indent=4)
+
+    with open(file_path_out, 'w') as f:
         json.dump(total_info, f, indent=4)
 
     return total_info
 
 
-# Plot
+# endregion
+
+# region Plot - Building and Layout
 def get_story_num(case):
     case1 = case
     story_num = []
@@ -1359,7 +1402,9 @@ def draw_data_transform(modular_dict: dict, modular_type: dict, out_space_info: 
     return case
 
 
-# Plot - MiC geometry
+# endregion
+
+#  region Plot - MiC geometry
 def transform_mic_data(mic_info):
     spaces = mic_info['spaces']
     modulars = mic_info['modulars']
@@ -1493,3 +1538,4 @@ def plot_3D_members(nodes, edges, planes, file_path='Results/', node_radius=250,
     #     os.makedirs(file_name)
     p2.save_graphic(file_name)
     pass
+# endregion

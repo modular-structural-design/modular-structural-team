@@ -1,9 +1,8 @@
 import json
 import math
+import os
 
-
-
-def extract_nodes_and_frames():
+def extract_nodes_and_frames(model_result_path):
     """
     从calculate_data.json中提取所有以'nodes'和'frame'开头的信息。
     返回:
@@ -13,7 +12,7 @@ def extract_nodes_and_frames():
     all_data = {}
 
     # 打开并加载 JSON 文件
-    with open('calculate_data.json', 'r') as file:
+    with open(os.path.join(model_result_path, 'calculate_data.json'), 'r') as file:
         data = json.load(file)
 
     # 遍历数据中的每一个对象
@@ -32,7 +31,7 @@ def extract_nodes_and_frames():
 
 def extract_section_info():
     # 从FEA_semantic_lists.json中提取截面类型信息
-    with open('FEMData/FEA_semantic_lists.json', 'r') as file:
+    with open('FEMData_prescribed/FEA_semantic_lists.json', 'r') as file:
         data = json.load(file)
     # 提取截面类型信息
     channel_data = data.get('section_types', {}).get('Rect', {})
@@ -40,9 +39,9 @@ def extract_section_info():
     return channel_data
 
 
-def read_fem_data():
+def read_fem_data(mic_FEM_data_file):
     # 读取mic_FEM_data.json
-    with open('FEMData/mic_FEM_data.json', 'r') as file:
+    with open(mic_FEM_data_file, 'r') as file:
         data = json.load(file)
 
     # 提取frames两端节点
@@ -58,7 +57,7 @@ def read_fem_data():
     return frames_index, frames_sections, nodes_geo
 
 
-def extract_section_properties(frames_sections, section_info,modular_FEM):
+def extract_section_properties(frames_sections, section_info, modular_FEM):
     """
     根据模块类型和边缘类型提取截面属性。
     """
@@ -87,6 +86,7 @@ def extract_section_properties(frames_sections, section_info,modular_FEM):
         }
 
     return section_properties
+
 
 def calculate_frame_lengths(frames_index, nodes_geo):
     """
@@ -119,7 +119,8 @@ def calculate_frame_lengths(frames_index, nodes_geo):
 
     return frame_lengths
 
-def calculate_g(section_properties, frame_reactions,frame_length):
+
+def calculate_g(section_properties, frame_reactions, frame_length):
     # 柱强度验算
     rx = 1
     ry = 1
@@ -152,13 +153,10 @@ def calculate_g(section_properties, frame_reactions,frame_length):
     G31 = (abs(frame_reactions[1]) / f / section_properties['Area'] / faiy) + n_canshu * (
             btx * abs(frame_reactions[5]) / f / section_properties['S22']
             / faibx) + (bmy * abs(frame_reactions[5]) / f / ry / section_properties['I22'] / (
-            1 - 0.8 * abs(frame_reactions[1]) /section_properties[
+            1 - 0.8 * abs(frame_reactions[1]) / section_properties[
         'I33'] / 1846434.18 * frame_length * frame_length)) - 1
 
     return [G11, G21, G31]
-
-
-
 
 
 def calculate_node_differences(all_data):
@@ -182,14 +180,15 @@ def calculate_node_differences(all_data):
                 previous_node = all_data[previous_node_key]
 
                 # 计算X和Y方向的差值，并除以3000
-                diff_x = abs(current_node[0] - previous_node[0])*250 / 3000 - 1
-                diff_y = abs(current_node[1] - previous_node[1])*250 / 3000 - 1
+                diff_x = abs(current_node[0] - previous_node[0]) * 250 / 3000 - 1
+                diff_y = abs(current_node[1] - previous_node[1]) * 250 / 3000 - 1
 
                 # 存储结果
                 story_drift[node_key] = [diff_x, diff_y]
     return story_drift
 
-def calculate_abs_node_differences(all_data,nodes_geo):
+
+def calculate_abs_node_differences(all_data, nodes_geo):
     # 计算绝对层间位移
     abs_story_drift = {}
 
@@ -204,8 +203,8 @@ def calculate_abs_node_differences(all_data,nodes_geo):
             node_geo = nodes_geo[node_key]
 
             # 计算X和Y方向，并除以3000
-            diff_x = abs(current_node[0] )*600 / node_geo[2] - 1
-            diff_y = abs(current_node[1] )*600 / node_geo[2] - 1
+            diff_x = abs(current_node[0]) * 600 / node_geo[2] - 1
+            diff_y = abs(current_node[1]) * 600 / node_geo[2] - 1
 
             # 存储结果
             abs_story_drift[node_key] = [diff_x, diff_y]
@@ -268,6 +267,7 @@ def find_max_coordinates(results):
 
     return max_G11, frames_with_max_G11, max_G12, frames_with_max_G12, max_G13, frames_with_max_G13
 
+
 def find_max_story_drift(story_drift):
     """
     筛选最大层间位移。
@@ -299,6 +299,7 @@ def find_max_story_drift(story_drift):
 
     return max_x_value, max_y_value, node_with_max_x, node_with_max_y
 
+
 def calculate_total_weight(frame_lengths, section_properties):
     """
     计算结构总重。
@@ -315,19 +316,20 @@ def calculate_total_weight(frame_lengths, section_properties):
         total_weight += weight
 
     return total_weight
-def output_index(modular_FEM):
+
+
+def output_index(modular_FEM, mic_FEM_data_file, output_file):
     # 提取数据
-    all_data = extract_nodes_and_frames()
+    all_data = extract_nodes_and_frames(os.path.dirname(mic_FEM_data_file))
     # 导出构件信息，节点位置
-    frames_index, frames_sections, nodes_geo = read_fem_data()
-    #提取截面信息
+    frames_index, frames_sections, nodes_geo = read_fem_data(mic_FEM_data_file)
+    # 提取截面信息
     section_info = extract_section_info()
     frame_lengths = calculate_frame_lengths(frames_index, nodes_geo)
-    section_properties = extract_section_properties(frames_sections, section_info,modular_FEM)
+    section_properties = extract_section_properties(frames_sections, section_info, modular_FEM)
     total_weight = calculate_total_weight(frame_lengths, section_properties)
     # 存储计算结果
     results = []
-
 
     # 对于每个frame，计算G值
     for key, value in all_data.items():
@@ -347,15 +349,14 @@ def output_index(modular_FEM):
 
             results.append((key, column_results))
 
-
-    story_drift = calculate_node_differences(all_data) # 节点层间位移角
-    abs_story_drift =calculate_abs_node_differences(all_data,nodes_geo)# 绝对节点层间位移角
-    max_x_story_drift, max_y_story_drift,  node_with_max_x_story_drift, node_with_max_y_story_drift = find_max_story_drift(story_drift)# 筛选最大节点层间位移角
-    max_x_abs_story_drift, max_y_abs_story_drift, node_with_max_x_abs_story_drift, node_with_max_y_abs_story_drift = find_max_story_drift(abs_story_drift)# 筛选最大节点绝对层间位移角
-    max_G11, frames_with_max_G11, max_G12,frames_with_max_G12,max_G13,frames_with_max_G13 = find_max_coordinates(results)# 筛选最大内力构件
-
-
-
+    story_drift = calculate_node_differences(all_data)  # 节点层间位移角
+    abs_story_drift = calculate_abs_node_differences(all_data, nodes_geo)  # 绝对节点层间位移角
+    max_x_story_drift, max_y_story_drift, node_with_max_x_story_drift, node_with_max_y_story_drift = find_max_story_drift(
+        story_drift)  # 筛选最大节点层间位移角
+    max_x_abs_story_drift, max_y_abs_story_drift, node_with_max_x_abs_story_drift, node_with_max_y_abs_story_drift = find_max_story_drift(
+        abs_story_drift)  # 筛选最大节点绝对层间位移角
+    max_G11, frames_with_max_G11, max_G12, frames_with_max_G12, max_G13, frames_with_max_G13 = find_max_coordinates(
+        results)  # 筛选最大内力构件
 
     result = {
         "maximum_G11": {
@@ -392,8 +393,7 @@ def output_index(modular_FEM):
     }
 
     # 将结果写入 JSON 文件
-    with open('max_values.json', 'w') as json_file:
+    with open(output_file, 'w') as json_file:
         json.dump(result, json_file, indent=4)
 
-
-
+    return None
