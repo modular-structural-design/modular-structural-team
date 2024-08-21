@@ -318,11 +318,11 @@ def calculate_total_weight(frame_lengths, section_properties):
     return total_weight
 
 
-def output_index(modular_FEM, mic_FEM_data_file, output_file):
+def output_index(modular_FEM, mic_FEM_data_file, output_file,mic_FEM_data):
     # 提取数据
-    all_data = extract_nodes_and_frames(os.path.dirname(mic_FEM_data_file))
+    all_data = extract_nodes_and_frames(mic_FEM_data_file)
     # 导出构件信息，节点位置
-    frames_index, frames_sections, nodes_geo = read_fem_data(mic_FEM_data_file)
+    frames_index, frames_sections, nodes_geo = read_fem_data(mic_FEM_data)
     # 提取截面信息
     section_info = extract_section_info()
     frame_lengths = calculate_frame_lengths(frames_index, nodes_geo)
@@ -393,7 +393,8 @@ def output_index(modular_FEM, mic_FEM_data_file, output_file):
     }
 
     # 将结果写入 JSON 文件
-    with open(output_file, 'w') as json_file:
+    # with open(output_file, 'w') as json_file:
+    with open(os.path.join(output_file, 'max_values.json'), 'w') as json_file:
         json.dump(result, json_file, indent=4)
 
     return None

@@ -1,3 +1,4 @@
+import copy
 import json
 import numpy as np
 import os
@@ -10,7 +11,7 @@ import utils as ut
 with open('config.json', 'r') as f:
     analysis_data = json.load(f)
 
-sap_dirpath = analysis_data["file_paths"]["sap_dirpath_xy"]  ####该地址、
+sap_dirpath = analysis_data["file_paths"]["sap_dirpath"]  ####该地址、
 # analysis_model_path = os.path.join(os.getcwd(), "FEM_sap2000")
 
 
@@ -65,6 +66,64 @@ def sap2000_initialization(model_file_path):
     N_mm_C = 9
     ret = SapModel.SetPresentUnits(N_mm_C)
     return SapModel, mySapObject
+
+
+def sap2000_initialization_mulit(model_file_path):
+    # SAP initialization
+    ## 1. SAP initialization
+    sap_model_file = os.path.join(model_file_path, 'FEM_sap2000')
+    AttachToInstance = False
+    SpecifyPath = True
+    if not os.path.exists(sap_model_file):
+        try:
+            os.makedirs(sap_model_file)
+        except OSError:
+            pass
+    # ModelPath = os.path.join(model_file_path, "API_1-001.sdb")
+    # ModelPath = os.path.join(model_file_path, "API_1-001.sdb")
+    helper = comtypes.client.CreateObject("SAP2000v1.Helper")
+    helper = helper.QueryInterface(comtypes.gen.SAP2000v1.cHelper)
+    if AttachToInstance:
+        # attach to a running instance of SAP2000
+        try:
+            # get the active SapObject
+            mySapObject = helper.Getobject("CSI.SAP2000.API.SapObject")
+        except (OSError, comtypes.COMError):
+            print("No running instance of the program found or failed to attach.")
+            sys.exit(-1)
+    else:
+        if SpecifyPath:
+            try:
+                # 'create an instance of the SAPObject from the specified path
+                mySapObject = helper.CreateObject(sap_dirpath)
+            except (OSError, comtypes.COMError):
+                print("Cannot start a new instance of the program from" + sap_dirpath)
+                sys.exit(-1)
+        else:
+            try:
+                # create an instance of the SapObject from the latest installed SAP2000
+                mySapObject = helper.CreateObjectProgID("CSI.SAP2000.API.SapObject")
+            except (OSError, comtypes.COMError):
+                print("Cannot start a new instance of the program")
+                sys.exit(-1)
+
+        # start SAP2000 application
+        mySapObject.ApplicationStart()
+
+    # create SapModel object
+    SapModel = mySapObject.SapModel
+    # initialize model
+    SapModel.InitializeNewModel()
+    modef_path1= copy.deepcopy(model_file_path)
+    sap_model_file = os.path.join(modef_path1, 'FEM_sap2000\\MiC1.sdb')
+    if not os.path.exists(os.path.dirname(sap_model_file)):
+        os.makedirs(os.path.dirname(sap_model_file))
+    # switch units
+    ret = SapModel.File.NewBlank()
+    N_mm_C = 9
+    ret = SapModel.SetPresentUnits(N_mm_C)
+    return SapModel,sap_model_file, mySapObject
+
 
 
 def FEM_properties_dataset(SapModel, semantic_list):
@@ -361,16 +420,16 @@ def out_put_displacement(Nodes, SapModel):
     for i in range(len(Nodes)):
         result = []
         Obj, U1, U2, U3, R1, R2, R3 = get_point_displacement("nodes" + str(i), SapModel)
-        # if len(U1) != 0:
-        name_all_nodes.append(Obj[0])
-        result.append(U1[0])
-        result.append(U2[0])
-        result.append(U3[0])
-        # result.append(R1[0])
-        # result.append(R2[0])
-        # result.append(R3[0])
-        displacements.append(result)
-        displacements_hor.append(m.sqrt(U1[0] ** 2 + U2[0] ** 2))
+        if len(U1) != 0:
+            name_all_nodes.append(Obj[0])
+            result.append(U1[0])
+            result.append(U2[0])
+            result.append(U3[0])
+            # result.append(R1[0])
+            # result.append(R2[0])
+            # result.append(R3[0])
+            displacements.append(result)
+            displacements_hor.append(m.sqrt(U1[0] ** 2 + U2[0] ** 2))
     displacements = np.array(displacements)
 
     return displacements
@@ -454,6 +513,37 @@ def parsing_to_sap2000(total_info: object, FEA_semantic_file: object, modular_FE
     ret = mySapObject.ApplicationExit(False)
     SapModel = None
     mySapObject = None
+
+    # pass
+    return None
+
+def parsing_to_sap2000_mulit(total_info: object, FEA_semantic_file: object, modular_FEM: object, model_file_path,SapModel, mySapObject,sap_model_file) -> object:
+    with open(FEA_semantic_file, "r") as f:
+        semantic_list = json.load(f)
+
+    modef_path1 = copy.deepcopy(model_file_path)
+    modef_path2 = copy.deepcopy(model_file_path)
+    # SapModel, mySapObject = sap2000_initialization(model_file_path)
+    SapModel = FEM_properties_dataset(SapModel, semantic_list)
+    SapModel = FEM_member_modelling(SapModel, total_info, modular_FEM)
+    SapModel = FEM_boundary(SapModel, total_info)
+    SapModel = FEM_loading(SapModel, total_info)
+
+    ####### save and analysis ##########
+
+    # sap_model_file = os.path.join(modef_path1, 'FEM_sap2000\\MiC1.sdb')
+    # if not os.path.exists(os.path.dirname(sap_model_file)):
+    #     os.makedirs(os.path.dirname(sap_model_file))
+    ret = SapModel.File.Save(sap_model_file)
+    ret = SapModel.Analyze.RunAnalysis()
+
+    ## output analysis data###
+    output_data(SapModel, total_info, modef_path2)
+    ret = SapModel.SetModelIsLocked(False)
+    ######## close sap2000 ############
+    # ret = mySapObject.ApplicationExit(False)
+    # SapModel = None
+    # mySapObject = None
 
     # pass
     return None
