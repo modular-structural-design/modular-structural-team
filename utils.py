@@ -214,7 +214,37 @@ def output_layouts(modular_plan_x, case_number):
     return None
 
 
+def output_history_bestind(best_ind_hist, case_number):
+    if not os.path.exists(Layout_Results_path):
+        os.makedirs(Layout_Results_path)
+
+    tp_data = {}
+
+    for i in range(len(best_ind_hist)):
+        tp_gen = np.array(best_ind_hist[i]['gen'], dtype=int).tolist()
+        tp_data1 = best_ind_hist[i]['evals']['data1']
+        tp_num =  best_ind_hist[i]['evals']['modular_num']
+        tp_fitness = best_ind_hist[i]['fitness']
+        tp_data[i] = {
+            'gen' : tp_gen,
+            'modular_num': tp_num,
+            'modular_type': tp_data1,
+            'fitness':tp_fitness
+        }
+
+    tp = 'layout' + str(case_number) + '_GA.json'
+    file2 = os.path.join(Layout_Results_path, tp)
+    with open(file2, 'w') as f:
+        json.dump(tp_data, f, indent=4)
+
+    # json_tp = json.dumps(tp_data)
+    # with open(file2, 'w') as f:
+    #     f.write(json_tp)
+        # json.dump(json_tp, f, indent=4)
+    return None
+
 # endregion
+
 
 # region Automated FEM modelling
 def output_structured_data(building_data, modular_plan_x, modular_type, story_height, file_path,
@@ -1261,6 +1291,7 @@ def implement_FEA_info_enrichment(file_path1, file_path2, file_path_out, bottom=
 
 # endregion
 
+
 # region Plot - Building and Layout
 def get_story_num(case):
     case1 = case
@@ -1403,6 +1434,7 @@ def draw_data_transform(modular_dict: dict, modular_type: dict, out_space_info: 
 
 
 # endregion
+
 
 #  region Plot - MiC geometry
 def transform_mic_data(mic_info):

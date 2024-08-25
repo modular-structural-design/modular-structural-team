@@ -87,15 +87,15 @@ def generate_inital_population(DNA_digits, region_index, modular_type, populatio
 # Evaluation aspect
 def fitness_calculation(indi1_eval):
     fitness = 0
-    penalty = 1e5
-    alpha = 10
+    penalty = 1e6
+    alpha = 0
     data1 = indi1_eval['data1']
     data2 = indi1_eval['data2']
     total_number = sum(data1.values())
     # import pdb;
     # pdb.set_trace()
     tp = [i for i in data1.values()]
-    total_type = 1 -  np.std(tp)/np.mean(tp)
+    total_type = 1 - np.std(tp)/np.mean(tp)
     total_coverage = ut.softmax(data2[1])
     fitness = total_number + alpha * total_type + penalty * total_coverage
     return fitness, total_number, total_coverage

@@ -11,7 +11,9 @@ import utils as ut
 with open('config.json', 'r') as f:
     analysis_data = json.load(f)
 
-sap_dirpath = analysis_data["file_paths"]["sap_dirpath"]  ####该地址、
+sap_dirpath = analysis_data["file_paths"]["sap_dirpath_xy"]  ####该地址、
+
+
 # analysis_model_path = os.path.join(os.getcwd(), "FEM_sap2000")
 
 
@@ -114,7 +116,7 @@ def sap2000_initialization_mulit(model_file_path):
     SapModel = mySapObject.SapModel
     # initialize model
     SapModel.InitializeNewModel()
-    modef_path1= copy.deepcopy(model_file_path)
+    modef_path1 = copy.deepcopy(model_file_path)
     sap_model_file = os.path.join(modef_path1, 'FEM_sap2000\\MiC1.sdb')
     if not os.path.exists(os.path.dirname(sap_model_file)):
         os.makedirs(os.path.dirname(sap_model_file))
@@ -122,8 +124,7 @@ def sap2000_initialization_mulit(model_file_path):
     ret = SapModel.File.NewBlank()
     N_mm_C = 9
     ret = SapModel.SetPresentUnits(N_mm_C)
-    return SapModel,sap_model_file, mySapObject
-
+    return SapModel, sap_model_file, mySapObject
 
 
 def FEM_properties_dataset(SapModel, semantic_list):
@@ -517,7 +518,9 @@ def parsing_to_sap2000(total_info: object, FEA_semantic_file: object, modular_FE
     # pass
     return None
 
-def parsing_to_sap2000_mulit(total_info: object, FEA_semantic_file: object, modular_FEM: object, model_file_path,SapModel, mySapObject,sap_model_file) -> object:
+
+def parsing_to_sap2000_mulit(total_info: object, FEA_semantic_file: object, modular_FEM: object, model_file_path,
+                             SapModel, mySapObject, sap_model_file) -> object:
     with open(FEA_semantic_file, "r") as f:
         semantic_list = json.load(f)
 
