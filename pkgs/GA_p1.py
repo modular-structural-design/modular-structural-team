@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-import utils as ut
+import utils_p1 as ut
 import random
 
 
@@ -281,3 +281,5 @@ def runGA(pop_ori, best_ind, gen_low, gen_up, building_data, modular_type, entir
         new_best_ind = copy.deepcopy(best_ind)
 
     return new_pop, new_best_ind
+
+

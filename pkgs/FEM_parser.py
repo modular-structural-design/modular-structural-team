@@ -8,7 +8,7 @@ import math as m
 import json
 import utils as ut
 
-with open('config.json', 'r') as f:
+with open('../config.json', 'r') as f:
     analysis_data = json.load(f)
 
 sap_dirpath = analysis_data["file_paths"]["sap_dirpath_xy"]  ####该地址、

@@ -1,8 +1,6 @@
-import numpy as np
 import json
 from importlib import reload
-import utils as ut
-import GA as GA
+from pkgs import GA as GA, utils as ut
 
 # region Reading data
 with open('BuildingData/data_case1.json', 'r') as f:

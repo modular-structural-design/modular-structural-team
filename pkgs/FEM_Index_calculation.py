@@ -31,7 +31,7 @@ def extract_nodes_and_frames(model_result_path):
 
 def extract_section_info():
     # 从FEA_semantic_lists.json中提取截面类型信息
-    with open('FEMData_prescribed/FEA_semantic_lists.json', 'r') as file:
+    with open('../FEMData_prescribed/FEA_semantic_lists.json', 'r') as file:
         data = json.load(file)
     # 提取截面类型信息
     channel_data = data.get('section_types', {}).get('Rect', {})

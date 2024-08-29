@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="mic_integrated_opt" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="$USER_HOME$/anaconda3/envs/py310_MiC_integrated_design" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="mic_integrated_opt" project-jdk-type="Python SDK" />
 </project>

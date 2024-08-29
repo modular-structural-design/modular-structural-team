@@ -1,8 +1,45 @@
 {
+  "p1": {
+    "BuildingData": {
+      "dir": "BuildingData",
+      "data1": "data_case1.json",
+      "data2": "mic_types.json"
+    },
+    "Layout_Resulst": {
+      "dir": "Layout_Results"
+    },
+    "Resulst": {
+      "dir": "Results"
+    },
+    "DrawingResults": {
+      "dir": "draw"
+    }
+  },
+  "p2": {
+    "sap_dirpath": "C:\\Program Files\\Computers and Structures\\SAP2000\\SAP2000.exe",
+    "BuildingData": {
+      "dir": "BuildingData",
+      "data1": "data_case1.json",
+      "data2": "mic_types.json"
+    },
+    "Layout_Resulst": {
+      "dir": "Layout_Results"
+    },
+    "FEMData": {
+      "dir": "FEMData_prescribed",
+      "data1": "FEA_loading.json",
+      "data2": "FEA_semantic_lists.json"
+    },
+    "FEM_model": {
+      "dir": "FEM_model",
+      "data1": "basic_structure_data.json",
+      "data2": "mic_structure_data.json",
+      "data3": "mic_structure_data2.json"
+    }
+  },
   "file_paths": {
     "BuildingData": "BuildingData",
     "sap_dirpath": "D:\\sap200023\\SAP2000.exe",
-    "sap_dirpath_xy": "C:\\Program Files\\Computers and Structures\\SAP2000\\SAP2000.exe",
     "Layout_Resulst": "Layout_Results",
     "FEMData": "FEMData",
     "FEMData_prescribed": "FEMData_prescribed",

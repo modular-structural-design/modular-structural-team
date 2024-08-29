@@ -1,11 +1,7 @@
-import copy
-import numpy as np
 import json
 from importlib import reload
-import utils as ut
-import GA as GA
 import os
-import MULIT_FEM as MF
+
 
 # region Reading data
 with open('config.json', 'r') as f:
@@ -41,6 +37,7 @@ if not os.path.exists(file_data["file_paths"]["FEMData"]):
     os.makedirs(file_data["file_paths"]["FEMData"])
 
 # endregion
+
 
 # region preprocess
 story_height = {"0": 3000, "1": 3000, "2": 3000}
@@ -82,20 +79,26 @@ reload(ut)
 
 FEA_info2 = ut.implement_FEA_info_enrichment(FEM_mic_data_ref, FEM_loading, mic_FEM_data)
 
-import FEM_parser as FEA
+from pkgs import FEM_parser as FEA, FEM_Index_calculation as FC, FEM_run as MF
+
 reload(FEA)
 # FEA.parsing_to_sap2000(FEA_info2, FEM_sematics, modular_FEM, os.path.dirname(mic_FEM_data))
 # endregion -------------------
 
 
 # region Evaluationt
-import FEM_Index_calculation as FC
 
 # reload(FC)
 # FC.output_index(modular_FEM, mic_FEM_data, os.path.dirname(mic_FEM_data))
 
 # endregion
 
+# region single FEM analysis
+
+
+# endregion
+
+# region multi-process FEM analysis
 modular_num = 3  # 模块种类数
 num_thread = 2  # 线程数
 pop_size = 4  # 种群数量
@@ -113,3 +116,5 @@ for i in range(len(mySapObject_name)):
     ret = mySapObject_name[i].ApplicationExit(False)
     SapModel_name[i] = None
     mySapObject_name[i] = None
+
+# endregion

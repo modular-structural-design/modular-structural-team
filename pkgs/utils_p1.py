@@ -10,15 +10,21 @@ import pandas as pd
 
 np.bool = np.bool_
 
-with open('config.json', 'r') as f:
-    file_data = json.load(f)
+# reading path files
+def load_paths_p1():
+    data_paths = {}
 
-Sapmodel_path = file_data["file_paths"]['FEM_analysis_file']
-FEMdata_path = file_data["file_paths"]['FEMData']
-Layout_Results_path = file_data["file_paths"]['Layout_Resulst']
-Drawing_path = file_data["file_paths"]['DrawingResults']
-BuildingData_path = file_data["file_paths"]['BuildingData']
+    with open('config.json', 'r') as f:
+        file_data_tp = json.load(f)
+    file_data = file_data_tp['p1']
 
+    data_paths['building_data'] = os.path.join(file_data["BuildingData"]["dir"], file_data["BuildingData"]["data1"])
+    data_paths['modular_type_data'] = os.path.join(file_data["BuildingData"]["dir"], file_data["BuildingData"]["data2"])
+    data_paths['DrawingResults_dir'] = os.path.join(os.getcwd(), file_data["Layout_Resulst"]["dir"])
+    data_paths['Layout_Resulst_dir'] = os.path.join(os.getcwd(), file_data["Layout_Resulst"]["dir"])
+
+    return data_paths
+# endregion
 
 # region Preprocess
 def unique_list(list_):
@@ -191,7 +197,7 @@ def evaluate_innerspace(out_space_info_, inner_space_info_, inner_space_cfg_, mo
     return f3_return
 
 
-def output_layouts(modular_plan_x, case_number):
+def output_layouts(modular_plan_x, case_number, Layout_Results_path):
     if not os.path.exists(Layout_Results_path):
         os.makedirs(Layout_Results_path)
 
@@ -214,7 +220,7 @@ def output_layouts(modular_plan_x, case_number):
     return None
 
 
-def output_history_bestind(best_ind_hist, case_number):
+def output_history_bestind(best_ind_hist, case_number, Layout_Results_path):
     if not os.path.exists(Layout_Results_path):
         os.makedirs(Layout_Results_path)
 
@@ -1323,7 +1329,7 @@ def get_modular_type(case):
     return modular_type_all, len(modular), modular_color
 
 
-def draw_picture(case, modular_color, story_id):
+def draw_picture(case, modular_color, story_id, APIPath):
     case1 = case
     modular_lo = []
     for i in story_id:
@@ -1391,7 +1397,7 @@ def draw_picture(case, modular_color, story_id):
         plt.xlim(min(x_scope) - 5000, max(x_scope) + 10000)
         plt.ylim(min(y_scope) - 5000, max(y_scope) + 20000)
         plt.axis('equal')
-        APIPath = os.path.join(os.getcwd(), f'draw')
+        # APIPath = os.path.join(os.getcwd(), f'draw')
 
         SpecifyPath = True
         if not os.path.exists(APIPath):
@@ -1405,12 +1411,12 @@ def draw_picture(case, modular_color, story_id):
         plt.show()
 
 
-def draw_case(case_data):
+def draw_case(case_data, path):
     story_id = get_story_num(case_data)
     # 获得楼层编号
     modular_type_all, modular_num, modular_color = get_modular_type(case_data)
 
-    draw_picture(case_data, modular_color, story_id)
+    draw_picture(case_data, modular_color, story_id, path)
 
 
 def draw_data_transform(modular_dict: dict, modular_type: dict, out_space_info: dict, out_space_cfg: dict):
