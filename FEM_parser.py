@@ -63,10 +63,7 @@ def sap2000_initialization(model_file_path):
     SapModel = mySapObject.SapModel
     # initialize model
     SapModel.InitializeNewModel()
-    ret = SapModel.File.NewBlank()
-    # switch units
-    N_mm_C = 9
-    ret = SapModel.SetPresentUnits(N_mm_C)
+
     return SapModel, mySapObject
 
 
@@ -128,6 +125,10 @@ def sap2000_initialization_mulit(model_file_path):
 
 
 def FEM_properties_dataset(SapModel, semantic_list):
+    ret = SapModel.File.NewBlank()
+    # switch units
+    N_mm_C = 9
+    ret = SapModel.SetPresentUnits(N_mm_C)
     # materials
     Q345 = semantic_list["materials"]["Q345"]
     steel_Q345_name = "Q345"
