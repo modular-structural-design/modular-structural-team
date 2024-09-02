@@ -10,9 +10,11 @@ import pandas as pd
 
 np.bool = np.bool_
 
+
 # reading path files
-def load_paths_p1():
+def load_paths_parameters_p1():
     data_paths = {}
+    parameters = {}
 
     with open('config.json', 'r') as f:
         file_data_tp = json.load(f)
@@ -23,7 +25,14 @@ def load_paths_p1():
     data_paths['DrawingResults_dir'] = os.path.join(os.getcwd(), file_data["Layout_Resulst"]["dir"])
     data_paths['Layout_Resulst_dir'] = os.path.join(os.getcwd(), file_data["Layout_Resulst"]["dir"])
 
-    return data_paths
+    parameters['population_size'] = file_data["parameters"]["population_size"]
+    parameters['iterations'] = file_data["parameters"]["iterations"]
+    parameters['case_num'] = file_data["parameters"]["case_num"]
+    parameters['modular_type_config'] = file_data["parameters"]["modular_type_config"]
+
+    return data_paths, parameters
+
+
 # endregion
 
 # region Preprocess
@@ -229,13 +238,13 @@ def output_history_bestind(best_ind_hist, case_number, Layout_Results_path):
     for i in range(len(best_ind_hist)):
         tp_gen = np.array(best_ind_hist[i]['gen'], dtype=int).tolist()
         tp_data1 = best_ind_hist[i]['evals']['data1']
-        tp_num =  best_ind_hist[i]['evals']['modular_num']
+        tp_num = best_ind_hist[i]['evals']['modular_num']
         tp_fitness = best_ind_hist[i]['fitness']
         tp_data[i] = {
-            'gen' : tp_gen,
+            'gen': tp_gen,
             'modular_num': tp_num,
             'modular_type': tp_data1,
-            'fitness':tp_fitness
+            'fitness': tp_fitness
         }
 
     tp = 'layout' + str(case_number) + '_GA.json'
@@ -246,8 +255,9 @@ def output_history_bestind(best_ind_hist, case_number, Layout_Results_path):
     # json_tp = json.dumps(tp_data)
     # with open(file2, 'w') as f:
     #     f.write(json_tp)
-        # json.dump(json_tp, f, indent=4)
+    # json.dump(json_tp, f, indent=4)
     return None
+
 
 # endregion
 

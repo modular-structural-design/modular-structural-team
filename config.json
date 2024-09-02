@@ -1,5 +1,12 @@
 {
   "p1": {
+    "_1": "For layout optimization, parameters need prescribed, the involved dirs are prescribed ",
+    "parameters": {
+      "population_size": 100,
+      "iterations": 100,
+      "case_num": 99,
+      "modular_type_config": "case1"
+    },
     "BuildingData": {
       "dir": "BuildingData",
       "data1": "data_case1.json",
@@ -7,16 +14,9 @@
     },
     "Layout_Resulst": {
       "dir": "Layout_Results"
-    },
-    "Resulst": {
-      "dir": "Results"
-    },
-    "DrawingResults": {
-      "dir": "draw"
     }
   },
   "p2": {
-    "sap_dirpath": "C:\\Program Files\\Computers and Structures\\SAP2000\\SAP2000.exe",
     "BuildingData": {
       "dir": "BuildingData",
       "data1": "data_case1.json",

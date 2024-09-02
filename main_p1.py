@@ -1,5 +1,6 @@
 import sys
-sys.path.append('pkgs')
+
+sys.path.append("pkgs")
 import os
 import copy
 import json
@@ -7,20 +8,20 @@ from importlib import reload
 from pkgs import GA_p1 as GA, utils_p1 as ut
 
 # region Reading data
-data_paths = ut.load_paths_p1()
+data_paths, parameters = ut.load_paths_parameters_p1()
 
-with open(data_paths['building_data'], 'r') as f:
+with open(data_paths["building_data"], "r") as f:
     building_data = json.load(f)
-out_space_num = len(building_data['outer_space_config'])
+out_space_num = len(building_data["outer_space_config"])
 out_space_info = building_data["outer_space_per_building"]
 out_space_cfg = building_data["outer_space_config"]
 inner_space_info = building_data["outer_space_has_inner_space"]
 inner_space_cfg = building_data["inner_space_config"]
 out_space_relationship = building_data["outer_space_relationship"]
 
-with open(data_paths['modular_type_data'], 'r') as f:
+with open(data_paths["modular_type_data"], "r") as f:
     tp = json.load(f)
-modular_type = tp['case1']  # selecting modular size configuration
+modular_type = tp[parameters["modular_type_config"]]  # selecting modular size configuration
 modular_type = {int(key): value for key, value in modular_type.items()}
 # endregion
 
@@ -30,14 +31,8 @@ modular_type = {int(key): value for key, value in modular_type.items()}
 max_length, DNA_digits, _ = GA.individual_cfg(out_space_info, out_space_cfg, modular_type)
 
 region_index = [0, 2, 9, 10]
-entire_region_dict = {
-    0: [3, 6, 1, 4, 7],
-    2: [5, 8],
-    9: [11, 13],
-    10: [12, 14]
-}
+entire_region_dict = {0: [3, 6, 1, 4, 7], 2: [5, 8], 9: [11, 13], 10: [12, 14]}
 gen_low, gen_up = GA.gen_cfg(DNA_digits, region_index, modular_type)
-
 indi1 = GA.generate_random_individual(DNA_digits, region_index, len(modular_type))
 pop1 = GA.generate_inital_population(DNA_digits, region_index, len(modular_type), 5)
 pop1 = GA.evaluate_population(building_data, modular_type, entire_region_dict, region_index, DNA_digits, pop1)
@@ -45,12 +40,12 @@ pop1 = GA.fitness_rank_pop_calculation(pop1)
 
 # run_GA
 reload(GA)
-pop_ori = GA.generate_inital_population(DNA_digits, region_index, len(modular_type), 100)
+pop_ori = GA.generate_inital_population(DNA_digits, region_index, len(modular_type), parameters["population_size"])
 pop_ori = GA.evaluate_population(building_data, modular_type, entire_region_dict, region_index, DNA_digits, pop_ori)
 pop_ori = GA.fitness_rank_pop_calculation(pop_ori)
 best_ind, index = GA.select_best(pop_ori)
 
-iters = 10
+iters = parameters["iterations"]
 best_ind_hist = []
 pop_new = copy.deepcopy(pop_ori)
 best_ind_new = copy.deepcopy(best_ind)
@@ -59,39 +54,51 @@ count = 0
 for i in range(iters):
     count += 1
     if count % 10 == 0:
-        print('add new population')
+        print("add new population")
         pop_tp = GA.generate_inital_population(DNA_digits, region_index, len(modular_type), 100)
-        pop_tp = GA.evaluate_population(building_data, modular_type, entire_region_dict, region_index, DNA_digits,
-                                        pop_tp)
+        pop_tp = GA.evaluate_population(
+            building_data, modular_type, entire_region_dict, region_index, DNA_digits, pop_tp
+        )
         pop_tp = GA.fitness_rank_pop_calculation(pop_tp)
         best_ind, index = GA.select_best(pop_tp)
         pop_tp[index] = copy.deepcopy(best_ind)
-        if best_ind_new['fitness'] > best_ind['fitness']:
+        if best_ind_new["fitness"] > best_ind["fitness"]:
             best_ind_new = copy.deepcopy(best_ind)
-
         pop_new = copy.deepcopy(pop_tp)
-    pop_new, best_ind_new = GA.runGA(pop_new, best_ind_new, gen_low, gen_up, building_data, modular_type,
-                                     entire_region_dict, region_index, DNA_digits, r_cross=0.6, r_mut=0.2)
+
+    pop_new, best_ind_new = GA.runGA(
+        pop_new,
+        best_ind_new,
+        gen_low,
+        gen_up,
+        building_data,
+        modular_type,
+        entire_region_dict,
+        region_index,
+        DNA_digits,
+        r_cross=0.6,
+        r_mut=0.2,
+    )
+
     best_ind_hist.append(best_ind_new)
     print(
-        f"step: {count};  fitness:  {best_ind_new['fitness']};  coverage: {best_ind_new['evals']['out_coverage']};  modular_num: {best_ind_new['evals']['modular_num']}")
+        f"step: {count};  fitness:  {best_ind_new['fitness']};  coverage: {best_ind_new['evals']['out_coverage']};  modular_num: {best_ind_new['evals']['modular_num']}"
+    )
 # endregion
 
 
 # region save and layout plot
 reload(ut)
-casenum = 1
+casenum = parameters["case_num"]
 
-modular_plan_x = GA.decode(entire_region_dict, region_index, DNA_digits, best_ind_new['gen'])
-tp = ut.output_layouts(modular_plan_x, casenum, data_paths['Layout_Resulst_dir'])
-ut.output_history_bestind(best_ind_hist, casenum, data_paths['Layout_Resulst_dir'])
+modular_plan_x = GA.decode(entire_region_dict, region_index, DNA_digits, best_ind_new["gen"])
+tp = ut.output_layouts(modular_plan_x, casenum, data_paths["Layout_Resulst_dir"])
+ut.output_history_bestind(best_ind_hist, casenum, data_paths["Layout_Resulst_dir"])
 
 data1 = ut.evaluate_modulars(modular_plan_x)
 data2 = ut.evaluate_outspace(out_space_info, out_space_cfg, modular_type, modular_plan_x)
 data3 = ut.evaluate_innerspace(out_space_info, inner_space_info, inner_space_cfg, modular_type, modular_plan_x)
 
 case1 = ut.draw_data_transform(modular_plan_x, modular_type, out_space_info, out_space_cfg)
-ut.draw_case(case1, data_paths['Layout_Resulst_dir'])
+ut.draw_case(case1, data_paths["Layout_Resulst_dir"])
 # endregion
-
-

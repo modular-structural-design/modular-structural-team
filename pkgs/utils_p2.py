@@ -25,8 +25,6 @@ def load_paths_p2():
     data_paths['FEM_loading'] = os.path.join(file_data["FEMData"]["dir"], file_data["FEMData"]["data1"])
     data_paths['FEM_semantics'] = os.path.join(file_data["FEMData"]["dir"], file_data["FEMData"]["data2"])
 
-    data_paths['sap_dir'] = os.path.join(os.getcwd(), file_data["sap_dirpath"])
-
     data_paths['FEM_model_dir'] = os.path.join(os.getcwd(), file_data["FEM_model"]['dir'])
 
     return data_paths

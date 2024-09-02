@@ -7,10 +7,11 @@ import numpy as np
 np.bool = np.bool_
 
 
-def output_structured_data(building_data, modular_plan_x, modular_type, story_height, model_dir, case_name,
-                           connection_distance=0.1):
+def output_structured_data(
+    building_data, modular_plan_x, modular_type, story_height, model_dir, case_name, connection_distance=0.1
+):
     building_data1 = copy.deepcopy(building_data)
-    out_space_num = len(building_data1['outer_space_config'])
+    out_space_num = len(building_data1["outer_space_config"])
     out_space_info = building_data1["outer_space_per_building"]
     out_space_cfg = building_data1["outer_space_config"]
     inner_space_info = building_data1["outer_space_has_inner_space"]
@@ -33,7 +34,7 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
     inner_space_nodes_list = []
     for values in out_space_info.values():
         inner_idx = inner_space_info[f"{values['index']}"]
-        story = int(values['story'])
+        story = int(values["story"])
         start_height = 0
         end_height = 0
         for i in range(story + 1):
@@ -83,7 +84,7 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
     temp_count = 0
     for values in out_space_info.values():
         inner_idx = inner_space_info[f"{values['index']}"]
-        story = int(values['story'])
+        story = int(values["story"])
         start_height = 0
         end_height = 0
         for i in range(story + 1):
@@ -146,7 +147,7 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
         temp_key_dict = {}
         temp_key_dict["story"] = values["story"]
         inner_idx = inner_space_info[f"{values['index']}"]
-        story = int(values['story'])
+        story = int(values["story"])
         start_height = 0
         end_height = 0
         for i in range(story + 1):
@@ -181,10 +182,12 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
             node7_idx = get_key(unique_inner_nodes_dict, node7)[0]
             node8_idx = get_key(unique_inner_nodes_dict, node8)[0]
             temp_key_dict["nodes"] = [node1_idx, node2_idx, node3_idx, node4_idx]
-            temp_key_dict["edges"] = [get_key(unique_edges_dict, [node1_idx, node2_idx])[0],
-                                      get_key(unique_edges_dict, [node2_idx, node3_idx])[0],
-                                      get_key(unique_edges_dict, [node3_idx, node4_idx])[0],
-                                      get_key(unique_edges_dict, [node4_idx, node1_idx])[0]]
+            temp_key_dict["edges"] = [
+                get_key(unique_edges_dict, [node1_idx, node2_idx])[0],
+                get_key(unique_edges_dict, [node2_idx, node3_idx])[0],
+                get_key(unique_edges_dict, [node3_idx, node4_idx])[0],
+                get_key(unique_edges_dict, [node4_idx, node1_idx])[0],
+            ]
         spaces_dict[key] = temp_key_dict
     # endregion
 
@@ -202,7 +205,7 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                 modular_length = out_space_cfg[f"{values['index']}"][2][1] - out_space_cfg[f"{values['index']}"][0][1]
             case "v":
                 modular_length = out_space_cfg[f"{values['index']}"][2][0] - out_space_cfg[f"{values['index']}"][0][0]
-        story = int(values['story'])
+        story = int(values["story"])
         start_height = 0
         end_height = 0
         for i in range(story + 1):
@@ -321,8 +324,13 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
     for i in range(len(unique_modular_nodes_dict)):
         for j in range(len(unique_modular_nodes_dict)):
             if i != j:
-                if np.linalg.norm(np.array(unique_modular_nodes_dict[i]['node_value']) - np.array(
-                        unique_modular_nodes_dict[j]['node_value'])) < connection_distance:
+                if (
+                    np.linalg.norm(
+                        np.array(unique_modular_nodes_dict[i]["node_value"])
+                        - np.array(unique_modular_nodes_dict[j]["node_value"])
+                    )
+                    < connection_distance
+                ):
                     if i < j:
                         extra_connected_list.append([i, j])
                     elif i > j:
@@ -346,7 +354,7 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                 modular_length = out_space_cfg[f"{values['index']}"][2][1] - out_space_cfg[f"{values['index']}"][0][1]
             case "v":
                 modular_length = out_space_cfg[f"{values['index']}"][2][0] - out_space_cfg[f"{values['index']}"][0][0]
-        story = int(values['story'])
+        story = int(values["story"])
         start_height = 0
         end_height = 0
         for i in range(story + 1):
@@ -491,7 +499,7 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                 if term1 not in inner_space_width:
                     inner_space_width.append(term1)
         modular_location = copy.deepcopy(out_space_cfg[f"{values['index']}"][0])
-        story = int(values['story'])
+        story = int(values["story"])
         start_height = 0
         end_height = 0
         for i in range(story + 1):
@@ -524,8 +532,16 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                     node6_idx = get_key(unique_inner_nodes_dict, node6)[0]
                     node7_idx = get_key(unique_inner_nodes_dict, node7)[0]
                     node8_idx = get_key(unique_inner_nodes_dict, node8)[0]
-                    detailed_info_dict["nodes"] = [node1_idx, node2_idx, node3_idx, node4_idx, node5_idx, node6_idx,
-                                                   node7_idx, node8_idx]
+                    detailed_info_dict["nodes"] = [
+                        node1_idx,
+                        node2_idx,
+                        node3_idx,
+                        node4_idx,
+                        node5_idx,
+                        node6_idx,
+                        node7_idx,
+                        node8_idx,
+                    ]
 
                     # edges
                     edge1_idx = get_key(unique_edges_dict, [node1_idx, node2_idx])[0]
@@ -540,8 +556,20 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                     edge10_idx = get_key(unique_edges_dict, [node2_idx, node6_idx])[0]
                     edge11_idx = get_key(unique_edges_dict, [node3_idx, node7_idx])[0]
                     edge12_idx = get_key(unique_edges_dict, [node4_idx, node8_idx])[0]
-                    detailed_info_dict["edges"] = [edge1_idx, edge2_idx, edge3_idx, edge4_idx, edge5_idx, edge6_idx,
-                                                   edge7_idx, edge8_idx, edge9_idx, edge10_idx, edge11_idx, edge12_idx]
+                    detailed_info_dict["edges"] = [
+                        edge1_idx,
+                        edge2_idx,
+                        edge3_idx,
+                        edge4_idx,
+                        edge5_idx,
+                        edge6_idx,
+                        edge7_idx,
+                        edge8_idx,
+                        edge9_idx,
+                        edge10_idx,
+                        edge11_idx,
+                        edge12_idx,
+                    ]
 
                     # planes
                     plane1_idx = get_key(unique_planes_dict, [node1_idx, node2_idx, node3_idx, node4_idx])[0]
@@ -550,8 +578,14 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                     plane4_idx = get_key(unique_planes_dict, [node4_idx, node3_idx, node7_idx, node8_idx])[0]
                     plane5_idx = get_key(unique_planes_dict, [node4_idx, node1_idx, node5_idx, node8_idx])[0]
                     plane6_idx = get_key(unique_planes_dict, [node3_idx, node2_idx, node6_idx, node7_idx])[0]
-                    detailed_info_dict["planes"] = [plane1_idx, plane2_idx, plane3_idx, plane4_idx, plane5_idx,
-                                                    plane6_idx]
+                    detailed_info_dict["planes"] = [
+                        plane1_idx,
+                        plane2_idx,
+                        plane3_idx,
+                        plane4_idx,
+                        plane5_idx,
+                        plane6_idx,
+                    ]
 
                     # space
                     loc_x, loc_y, loc_z = modular_location
@@ -565,8 +599,10 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                             modular_in_inner_space = False
                     if not modular_in_inner_space:
                         for ii in range(len(inner_space_width) - 1):
-                            if modular_loc_l <= inner_space_width[ii + 1] and modular_loc_r >= inner_space_width[
-                                ii + 1]:
+                            if (
+                                modular_loc_l <= inner_space_width[ii + 1]
+                                and modular_loc_r >= inner_space_width[ii + 1]
+                            ):
                                 modular_space = [inner_idx[ii - 1], inner_idx[ii]]
                                 break
                     detailed_info_dict["space"] = modular_space
@@ -596,8 +632,16 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                     node6_idx = get_key(unique_inner_nodes_dict, node6)[0]
                     node7_idx = get_key(unique_inner_nodes_dict, node7)[0]
                     node8_idx = get_key(unique_inner_nodes_dict, node8)[0]
-                    detailed_info_dict["nodes"] = [node1_idx, node2_idx, node3_idx, node4_idx, node5_idx, node6_idx,
-                                                   node7_idx, node8_idx]
+                    detailed_info_dict["nodes"] = [
+                        node1_idx,
+                        node2_idx,
+                        node3_idx,
+                        node4_idx,
+                        node5_idx,
+                        node6_idx,
+                        node7_idx,
+                        node8_idx,
+                    ]
                     # edges
                     edge1_idx = get_key(unique_edges_dict, [node1_idx, node2_idx])[0]
                     edge2_idx = get_key(unique_edges_dict, [node2_idx, node3_idx])[0]
@@ -611,8 +655,20 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                     edge10_idx = get_key(unique_edges_dict, [node2_idx, node6_idx])[0]
                     edge11_idx = get_key(unique_edges_dict, [node3_idx, node7_idx])[0]
                     edge12_idx = get_key(unique_edges_dict, [node4_idx, node8_idx])[0]
-                    detailed_info_dict["edges"] = [edge1_idx, edge2_idx, edge3_idx, edge4_idx, edge5_idx, edge6_idx,
-                                                   edge7_idx, edge8_idx, edge9_idx, edge10_idx, edge11_idx, edge12_idx]
+                    detailed_info_dict["edges"] = [
+                        edge1_idx,
+                        edge2_idx,
+                        edge3_idx,
+                        edge4_idx,
+                        edge5_idx,
+                        edge6_idx,
+                        edge7_idx,
+                        edge8_idx,
+                        edge9_idx,
+                        edge10_idx,
+                        edge11_idx,
+                        edge12_idx,
+                    ]
 
                     # planes
                     plane1_idx = get_key(unique_planes_dict, [node1_idx, node2_idx, node3_idx, node4_idx])[0]
@@ -621,8 +677,14 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                     plane4_idx = get_key(unique_planes_dict, [node4_idx, node3_idx, node7_idx, node8_idx])[0]
                     plane5_idx = get_key(unique_planes_dict, [node4_idx, node1_idx, node5_idx, node8_idx])[0]
                     plane6_idx = get_key(unique_planes_dict, [node3_idx, node2_idx, node6_idx, node7_idx])[0]
-                    detailed_info_dict["planes"] = [plane1_idx, plane2_idx, plane3_idx, plane4_idx, plane5_idx,
-                                                    plane6_idx]
+                    detailed_info_dict["planes"] = [
+                        plane1_idx,
+                        plane2_idx,
+                        plane3_idx,
+                        plane4_idx,
+                        plane5_idx,
+                        plane6_idx,
+                    ]
 
                     # space
                     loc_x, loc_y, loc_z = modular_location
@@ -636,8 +698,10 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
                             modular_in_inner_space = False
                     if not modular_in_inner_space:
                         for ii in range(len(inner_space_width) - 1):
-                            if modular_loc_l <= inner_space_width[ii + 1] and modular_loc_r >= inner_space_width[
-                                ii + 1]:
+                            if (
+                                modular_loc_l <= inner_space_width[ii + 1]
+                                and modular_loc_r >= inner_space_width[ii + 1]
+                            ):
                                 modular_space = [inner_idx[ii - 1], inner_idx[ii]]
                                 break
                     detailed_info_dict["space"] = modular_space
@@ -670,8 +734,8 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
     if not os.path.exists(file_path):
         os.makedirs(file_path)
 
-    file_data = os.path.join(file_path, 'data1.json')
-    with open(file_data, 'w') as f:
+    file_data = os.path.join(file_path, "data1.json")
+    with open(file_data, "w") as f:
         json.dump(project_info, f, indent=4)
 
     return project_info
@@ -680,8 +744,8 @@ def output_structured_data(building_data, modular_plan_x, modular_type, story_he
 def implement_modular_structure_data(model_dir, case_name, connection_distance=1):
     # file1 = os.path.join(file_path, 'basic_structure_data.json')
     file_path = os.path.join(model_dir, case_name)
-    file_data = os.path.join(file_path, 'data1.json')
-    with open(file_data, 'r') as f:
+    file_data = os.path.join(file_path, "data1.json")
+    with open(file_data, "r") as f:
         project_info = json.load(f)
     modulars = project_info["modulars"]
     nodes = project_info["nodes"]
@@ -690,11 +754,11 @@ def implement_modular_structure_data(model_dir, case_name, connection_distance=1
     spaces = project_info["spaces"]
 
     new_spaces = {}
-    new_spaces['nodes'] = nodes
-    new_spaces['edges'] = edges
-    new_spaces['entities'] = {}
+    new_spaces["nodes"] = nodes
+    new_spaces["edges"] = edges
+    new_spaces["entities"] = {}
     for i in range(len(spaces)):
-        new_spaces['entities'][i] = spaces[str(i)]
+        new_spaces["entities"][i] = spaces[str(i)]
 
     new_modulars = {}
     count = -1
@@ -710,12 +774,12 @@ def implement_modular_structure_data(model_dir, case_name, connection_distance=1
 
         modular = modulars[str(i)]
 
-        for j in range(len(modular['nodes'])):
+        for j in range(len(modular["nodes"])):
             count += 1
-            node_index[modular['nodes'][j]] = count
-            new_nodes[count] = nodes[str(modular['nodes'][j])]
-        for j in range(len(modular['edges'])):
-            tp = edges[str(modular['edges'][j])]
+            node_index[modular["nodes"][j]] = count
+            new_nodes[count] = nodes[str(modular["nodes"][j])]
+        for j in range(len(modular["edges"])):
+            tp = edges[str(modular["edges"][j])]
             new_edges[j] = [node_index[tp[0]], node_index[tp[1]]]
             if j < 4:
                 new_edge_types.append(0)
@@ -723,8 +787,8 @@ def implement_modular_structure_data(model_dir, case_name, connection_distance=1
                 new_edge_types.append(1)
             else:
                 new_edge_types.append(2)
-        for j in range(len(modular['planes'])):
-            tp = planes[str(modular['planes'][j])]
+        for j in range(len(modular["planes"])):
+            tp = planes[str(modular["planes"][j])]
             tp2 = [node_index[tp[k]] for k in range(len(tp))]
             new_planes[j] = tp2
             if j == 0:
@@ -735,22 +799,22 @@ def implement_modular_structure_data(model_dir, case_name, connection_distance=1
                 new_plane_types.append(2)
 
         new_modulars[i] = {}
-        new_modulars[i]['nodes'] = new_nodes
-        new_modulars[i]['edges'] = new_edges
-        new_modulars[i]['planes'] = new_planes
-        new_modulars[i]['edge_types'] = new_edge_types
-        new_modulars[i]['plane_types'] = new_plane_types
-        new_modulars[i]['space'] = modular['space']
-        new_modulars[i]['modular_type'] = modular['modular_type']
+        new_modulars[i]["nodes"] = new_nodes
+        new_modulars[i]["edges"] = new_edges
+        new_modulars[i]["planes"] = new_planes
+        new_modulars[i]["edge_types"] = new_edge_types
+        new_modulars[i]["plane_types"] = new_plane_types
+        new_modulars[i]["space"] = modular["space"]
+        new_modulars[i]["modular_type"] = modular["modular_type"]
 
     new_inter_connections = {}
     count = -1
     for i in range(len(new_modulars) - 1):
         modular1 = new_modulars[i]
-        nodes1 = modular1['nodes']
+        nodes1 = modular1["nodes"]
         for j in range(i + 1, len(new_modulars)):
             modular2 = new_modulars[j]
-            nodes2 = modular2['nodes']
+            nodes2 = modular2["nodes"]
             for k, value1 in nodes1.items():
                 for t, value2 in nodes2.items():
                     tp1 = np.array(value1)
@@ -766,20 +830,20 @@ def implement_modular_structure_data(model_dir, case_name, connection_distance=1
     mic_info["inter_connections"] = new_inter_connections
 
     # file2 = os.path.join(file_path, 'mic_structure_data.json')
-    file_data = os.path.join(file_path, 'data2.json')
-    with open(file_data, 'w') as f:
+    file_data = os.path.join(file_path, "data2.json")
+    with open(file_data, "w") as f:
         json.dump(mic_info, f, indent=4)
 
     return mic_info
 
 
 def transform_mic_data(mic_info):
-    spaces = mic_info['spaces']
-    modulars = mic_info['modulars']
+    spaces = mic_info["spaces"]
+    modulars = mic_info["modulars"]
 
     nodes_dict = {}
     for i in range(len(modulars)):
-        tp_nodes = modulars[i]['nodes']
+        tp_nodes = modulars[i]["nodes"]
         for key, value in tp_nodes.items():
             nodes_dict[key] = value
     nodes = []
@@ -788,13 +852,13 @@ def transform_mic_data(mic_info):
 
     edges = []
     for i in range(len(modulars)):
-        tp_edges = modulars[i]['edges']
+        tp_edges = modulars[i]["edges"]
         for key, value in tp_edges.items():
             edges.append(value)
 
     planes = []
     for i in range(len(modulars)):
-        tp_planes = modulars[i]['planes']
+        tp_planes = modulars[i]["planes"]
         for key, value in tp_planes.items():
             planes.append(value)
 
@@ -802,13 +866,13 @@ def transform_mic_data(mic_info):
 
 
 def transform_mic_data2(mic_info):
-    spaces = mic_info['spaces']
-    modulars = mic_info['modulars']
-    inter_connections = mic_info['inter_connections']
+    spaces = mic_info["spaces"]
+    modulars = mic_info["modulars"]
+    inter_connections = mic_info["inter_connections"]
 
     nodes_dict = {}
     for i in range(len(modulars)):
-        tp_nodes = modulars[str(i)]['nodes']
+        tp_nodes = modulars[str(i)]["nodes"]
         for key, value in tp_nodes.items():
             nodes_dict[key] = value
     nodes = []
@@ -817,7 +881,7 @@ def transform_mic_data2(mic_info):
 
     edges = []
     for i in range(len(modulars)):
-        tp_edges = modulars[str(i)]['edges']
+        tp_edges = modulars[str(i)]["edges"]
         for key, value in tp_edges.items():
             edges.append(value)
 
@@ -826,7 +890,7 @@ def transform_mic_data2(mic_info):
 
     planes = []
     for i in range(len(modulars)):
-        tp_planes = modulars[str(i)]['planes']
+        tp_planes = modulars[str(i)]["planes"]
         for key, value in tp_planes.items():
             planes.append(value)
 
@@ -847,14 +911,14 @@ def find_adjust_direction(point, center_point):
 def modify_mic_geo(model_dir, case_name, contraction=100):
     # file1 = os.path.join(file_path, 'mic_structure_data.json')
     file_path = os.path.join(model_dir, case_name)
-    file_data = os.path.join(file_path, 'data2.json')
-    with open(file_data, 'r') as f:
+    file_data = os.path.join(file_path, "data2.json")
+    with open(file_data, "r") as f:
         mic_info = json.load(f)
-    modulars = mic_info['modulars']
+    modulars = mic_info["modulars"]
 
     new_modulars = {}
     for i in range(len(modulars)):
-        nodes = modulars[str(i)]['nodes']
+        nodes = modulars[str(i)]["nodes"]
         tp_node = []
         for j, value in nodes.items():
             tp_node.append(nodes[j])
@@ -866,7 +930,7 @@ def modify_mic_geo(model_dir, case_name, contraction=100):
             direction = find_adjust_direction(tp_node, center_point)
             tp_node = tp_node + contraction * np.array(direction)
             nodes[j] = tp_node.tolist()
-        modulars[str(i)]['nodes'] = nodes
+        modulars[str(i)]["nodes"] = nodes
 
     new_modulars = modulars
 
@@ -874,10 +938,10 @@ def modify_mic_geo(model_dir, case_name, contraction=100):
     count = -1
     for i in range(len(new_modulars) - 1):
         modular1 = new_modulars[str(i)]
-        nodes1 = modular1['nodes']
+        nodes1 = modular1["nodes"]
         for j in range(i + 1, len(new_modulars)):
             modular2 = new_modulars[str(j)]
-            nodes2 = modular2['nodes']
+            nodes2 = modular2["nodes"]
             for k, value1 in nodes1.items():
                 for t, value2 in nodes2.items():
                     tp1 = np.array(value1)
@@ -893,22 +957,21 @@ def modify_mic_geo(model_dir, case_name, contraction=100):
     mic_info_new["inter_connections"] = new_inter_connections
 
     # file2 = os.path.join(file_path, 'mic_structure_data2.json')
-    file_data = os.path.join(file_path, 'data3.json')
-    with open(file_data, 'w') as f:
+    file_data = os.path.join(file_path, "data3.json")
+    with open(file_data, "w") as f:
         json.dump(mic_info_new, f, indent=4)
 
     return mic_info_new
 
 
-def implement_FEA_info_enrichment(model_dir, case_name, loading_path, bottom=200.):
+def implement_FEA_info_enrichment(model_dir, case_name, loading_path, bottom=200.0):
     # file1 = os.path.join(file_path, 'mic_structure_data2.json')
     # file2 = os.path.join(file_path, 'FEA_loading.json')
-
     file_path = os.path.join(model_dir, case_name)
-    file_data = os.path.join(file_path, 'data3.json')
-    with open(file_data, 'r') as f:
+    file_data = os.path.join(file_path, "data3.json")
+    with open(file_data, "r") as f:
         mic_info = json.load(f)
-    with open(loading_path, 'r') as f:
+    with open(loading_path, "r") as f:
         loading_info = json.load(f)
     # with open(os.path.join(file_path, 'FEA_semantic_lists.json'), 'r') as f:
     #     semantics = json.load(f)
@@ -923,13 +986,13 @@ def implement_FEA_info_enrichment(model_dir, case_name, loading_path, bottom=200
     frame_loads = {}
     plane_loads = {}
 
-    spaces = mic_info['spaces']
-    modulars = mic_info['modulars']
-    inter_connections = mic_info['inter_connections']
+    spaces = mic_info["spaces"]
+    modulars = mic_info["modulars"]
+    inter_connections = mic_info["inter_connections"]
 
     nodes_dict = {}
     for i in range(len(modulars)):
-        tp_nodes = modulars[str(i)]['nodes']
+        tp_nodes = modulars[str(i)]["nodes"]
         for key, value in tp_nodes.items():
             nodes_dict[key] = value
     for i in range(len(nodes_dict)):
@@ -937,9 +1000,9 @@ def implement_FEA_info_enrichment(model_dir, case_name, loading_path, bottom=200
 
     count = -1
     for i in range(len(modulars)):
-        type = modulars[str(i)]['modular_type']
-        tp_edges = modulars[str(i)]['edges']
-        tp_edge_types = modulars[str(i)]['edge_types']
+        type = modulars[str(i)]["modular_type"]
+        tp_edges = modulars[str(i)]["edges"]
+        tp_edge_types = modulars[str(i)]["edge_types"]
         edge_count = -1
         for key, value in tp_edges.items():
             count += 1
@@ -949,7 +1012,7 @@ def implement_FEA_info_enrichment(model_dir, case_name, loading_path, bottom=200
 
     count = -1
     for i in range(len(modulars)):
-        tp_planes = modulars[str(i)]['planes']
+        tp_planes = modulars[str(i)]["planes"]
         for key, value in tp_planes.items():
             count += 1
             plane_index["plane" + str(count)] = value
@@ -958,8 +1021,8 @@ def implement_FEA_info_enrichment(model_dir, case_name, loading_path, bottom=200
     for i in range(len(inter_connections)):
         count += 1
         inter_connections_index["inter_connection" + str(count)] = inter_connections[str(i)]
-        node1 = nodes_geo['nodes' + str(inter_connections[str(i)][0])]
-        node2 = nodes_geo['nodes' + str(inter_connections[str(i)][1])]
+        node1 = nodes_geo["nodes" + str(inter_connections[str(i)][0])]
+        node2 = nodes_geo["nodes" + str(inter_connections[str(i)][1])]
         tp = np.array(node1) - np.array(node2)
 
         if abs(tp[2]) < 1e-2:
@@ -973,70 +1036,77 @@ def implement_FEA_info_enrichment(model_dir, case_name, loading_path, bottom=200
             boundary_nodes.append(key)
 
     # load patterns
-    load_patterns = loading_info['load_patterns']
+    load_patterns = loading_info["load_patterns"]
 
     # loadings: frame
     count = -1
     for i in range(len(modulars)):
-        type = modulars[str(i)]['modular_type']
-        tp_edges = modulars[str(i)]['edges']
+        type = modulars[str(i)]["modular_type"]
+        tp_edges = modulars[str(i)]["edges"]
         for key, value in tp_edges.items():
             count += 1
-            if key == '0' or key == '1' or key == '2' or key == '3':
+            if key == "0" or key == "1" or key == "2" or key == "3":
                 frame_name = "frame" + str(count)
-                LoadPat = loading_info['frame_load']['0']['type']
+                LoadPat = loading_info["frame_load"]["0"]["type"]
                 MyType = 1
-                Dir = loading_info['frame_load']['0']['direction']
+                Dir = loading_info["frame_load"]["0"]["direction"]
                 Dist1 = 0
                 Dist2 = 1
-                Val1 = loading_info['frame_load']['0']['value']
-                Val2 = loading_info['frame_load']['0']['value']
-                frame_loads[frame_name] = {"LoadPat": LoadPat, "MyType": MyType, "Dir": Dir, "Val1": Val1, "Val2": Val2,
-                                           "Dist1": Dist1, "Dist2": Dist2}
+                Val1 = loading_info["frame_load"]["0"]["value"]
+                Val2 = loading_info["frame_load"]["0"]["value"]
+                frame_loads[frame_name] = {
+                    "LoadPat": LoadPat,
+                    "MyType": MyType,
+                    "Dir": Dir,
+                    "Val1": Val1,
+                    "Val2": Val2,
+                    "Dist1": Dist1,
+                    "Dist2": Dist2,
+                }
             # frames_index[] = value
             # frames_sections["frame" + str(count)] = {"modular_type": type, "edge_type": tp_edge_types[edge_count]}
 
     # loadings: planes
     count = -1
     for i in range(len(modulars)):
-        tp_planes = modulars[str(i)]['planes']
+        tp_planes = modulars[str(i)]["planes"]
         for key, value in tp_planes.items():
             count += 1
             plane_name = "plane" + str(count)
-            if key == '0':
+            if key == "0":
                 plane_loads[plane_name] = {
                     "0": {
-                        "LoadPat": loading_info['plane_load']['0']['type'],
-                        "Value": loading_info['plane_load']['0']['value'],
-                        "Dir": loading_info['plane_load']['0']['direction'],
+                        "LoadPat": loading_info["plane_load"]["0"]["type"],
+                        "Value": loading_info["plane_load"]["0"]["value"],
+                        "Dir": loading_info["plane_load"]["0"]["direction"],
                         "DistType": 2,
                         "Replace": True,
-                        "CSys": "Global"
+                        "CSys": "Global",
                     },
                     "1": {
-                        "LoadPat": loading_info['plane_load']['1']['type'],
-                        "Value": loading_info['plane_load']['1']['value'],
-                        "Dir": loading_info['plane_load']['1']['direction'],
+                        "LoadPat": loading_info["plane_load"]["1"]["type"],
+                        "Value": loading_info["plane_load"]["1"]["value"],
+                        "Dir": loading_info["plane_load"]["1"]["direction"],
                         "DistType": 2,
                         "Replace": True,
-                        "CSys": "Global"
+                        "CSys": "Global",
                     },
                 }
-            if key == '1':
+            if key == "1":
                 plane_loads[plane_name] = {
                     "0": {
-                        "LoadPat": loading_info['plane_load']['2']['type'],
-                        "Value": loading_info['plane_load']['2']['value'],
-                        "Dir": loading_info['plane_load']['2']['direction'],
+                        "LoadPat": loading_info["plane_load"]["2"]["type"],
+                        "Value": loading_info["plane_load"]["2"]["value"],
+                        "Dir": loading_info["plane_load"]["2"]["direction"],
                         "DistType": 2,
                         "Replace": True,
-                        "CSys": "Global"
+                        "CSys": "Global",
                     },
                 }
 
     # loadings: seismic and combination
-    seismic_info = loading_info['earthquake_load']
-    load_combinations = loading_info['load_combinations']
+    seismic_info = loading_info["earthquake_load"]
+    load_combinations = loading_info["load_combinations"]
 
     # summarize information
     total_info = {}
@@ -1055,9 +1125,31 @@ def implement_FEA_info_enrichment(model_dir, case_name, loading_path, bottom=200
 
     # with open(os.path.join(file_path, 'mic_FEM_data.json'), 'w') as f:
     #     json.dump(total_info, f, indent=4)
-    file_data = os.path.join(file_path, 'mic_fem_data.json')
-    with open(file_data, 'w') as f:
+    file_data = os.path.join(file_path, "mic_fem_data.json")
+    with open(file_data, "w") as f:
         json.dump(total_info, f, indent=4)
 
     return total_info
 
+
+def modify_mic_info_section(mic_info, model_dir, case_name, modular_sections):
+    # import pdb
+    #
+    # pdb.set_trace()
+    frames_sections = mic_info["frames_sections"]
+    for key, value in frames_sections.items():
+        modular_type = value["modular_type"]
+        edge_type = value["edge_type"]
+        section_num = modular_sections[modular_type][edge_type]
+        frames_sections[key]["section_num"] = section_num
+    mic_info["frames_sections"] = frames_sections
+
+    file_path = os.path.join(model_dir, case_name)
+    if not os.path.exists(file_path):
+        os.makedirs(file_path)
+
+    file_data = os.path.join(file_path, "mic_fem_data.json")
+    with open(file_data, "w") as f:
+        json.dump(mic_info, f, indent=4)
+
+    return mic_info
