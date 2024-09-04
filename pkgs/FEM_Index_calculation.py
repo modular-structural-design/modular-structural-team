@@ -31,7 +31,7 @@ def extract_nodes_and_frames(model_result_path):
 
 def extract_section_info():
     # 从FEA_semantic_lists.json中提取截面类型信息
-    with open('../FEMData_prescribed/FEA_semantic_lists.json', 'r') as file:
+    with open('FEMData_prescribed/FEA_semantic_lists.json', 'r') as file:
         data = json.load(file)
     # 提取截面类型信息
     channel_data = data.get('section_types', {}).get('Rect', {})
@@ -41,9 +41,9 @@ def extract_section_info():
 
 def read_fem_data(mic_FEM_data_file):
     # 读取mic_FEM_data.json
-    with open(mic_FEM_data_file, 'r') as file:
-        data = json.load(file)
-
+    # with open(mic_FEM_data_file, 'r') as file:
+    #     data = json.load(file)
+    data = mic_FEM_data_file
     # 提取frames两端节点
     frames_index = data.get('frames_index', {})
 
@@ -74,8 +74,8 @@ def extract_section_properties(frames_sections, section_info, modular_FEM):
         edge_type = frame_value['edge_type']
 
         # 确定截面类型
-        sections = modular_FEM[modular_type]['sections'][edge_type]
-
+        # sections = modular_FEM[modular_type]['sections'][edge_type]
+        sections = frame_value['section_num']
         # 获取截面属性
         section_properties[frame_key] = {
             'Area': section_info[str(sections)]['Area'],

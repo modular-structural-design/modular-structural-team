@@ -6,12 +6,11 @@ import sys
 import comtypes.client
 import math as m
 import json
-import utils as ut
 
-with open('../config.json', 'r') as f:
+with open('config.json', 'r') as f:
     analysis_data = json.load(f)
 
-sap_dirpath = analysis_data["file_paths"]["sap_dirpath_xy"]  ####该地址、
+sap_dirpath = analysis_data["file_paths"]["sap_dirpath"]  ####该地址、
 
 
 # analysis_model_path = os.path.join(os.getcwd(), "FEM_sap2000")
@@ -120,14 +119,15 @@ def sap2000_initialization_mulit(model_file_path):
     sap_model_file = os.path.join(modef_path1, 'FEM_sap2000\\MiC1.sdb')
     if not os.path.exists(os.path.dirname(sap_model_file)):
         os.makedirs(os.path.dirname(sap_model_file))
-    # switch units
-    ret = SapModel.File.NewBlank()
-    N_mm_C = 9
-    ret = SapModel.SetPresentUnits(N_mm_C)
+
     return SapModel, sap_model_file, mySapObject
 
 
 def FEM_properties_dataset(SapModel, semantic_list):
+    # switch units
+    ret = SapModel.File.NewBlank()
+    N_mm_C = 9
+    ret = SapModel.SetPresentUnits(N_mm_C)
     # materials
     Q345 = semantic_list["materials"]["Q345"]
     steel_Q345_name = "Q345"
@@ -264,9 +264,9 @@ def FEM_member_modelling(SapModel, FEM_info, modular_FEM):
         Point2 = "nodes" + str(indx2)
         frame_name = frame_name
         tp_frame_section = frames_sections[frame_name]
-        tp = modular_FEM[tp_frame_section['modular_type']]['sections']
-        tp = tp[tp_frame_section['edge_type']]
-        tp = "Rect" + str(tp)
+        # tp = modular_FEM[tp_frame_section['modular_type']]['sections']
+        # tp = tp[tp_frame_section['edge_type']]
+        tp = "Rect" + str(tp_frame_section['section_num'])
         ret = SapModel.FrameObj.AddByPoint(Point1, Point2, " ", tp, frame_name)
 
     for connection_name, value in inter_connections_index.items():
@@ -519,12 +519,11 @@ def parsing_to_sap2000(total_info: object, FEA_semantic_file: object, modular_FE
     return None
 
 
-def parsing_to_sap2000_mulit(total_info: object, FEA_semantic_file: object, modular_FEM: object, model_file_path,
+def parsing_to_sap2000_mulit(total_info: object,  modular_FEM: object, model_file_path,
                              SapModel, mySapObject, sap_model_file) -> object:
-    with open(FEA_semantic_file, "r") as f:
+    with open('FEMData_prescribed\\FEA_semantic_lists.json', "r") as f:
         semantic_list = json.load(f)
 
-    modef_path1 = copy.deepcopy(model_file_path)
     modef_path2 = copy.deepcopy(model_file_path)
     # SapModel, mySapObject = sap2000_initialization(model_file_path)
     SapModel = FEM_properties_dataset(SapModel, semantic_list)
